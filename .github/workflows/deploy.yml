@@ -3,7 +3,7 @@ name: Deploy Custom n8n Node
 on:
   push:
     branches:
-      - main
+      - dev
   workflow_dispatch:
 
 jobs:

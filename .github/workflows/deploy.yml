@@ -1,0 +1,58 @@
+name: Deploy Custom n8n Node
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build node
+        run: npm run build
+
+      - name: Reset n8n on server
+        uses: appleboy/ssh-action@v0.1.10
+        with:
+          host: "13.57.47.219"
+          username: "ec2-user"
+          port: 22
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            echo "Reset n8n..."
+            rm -rf n8n-compose/plumoai-nodes
+
+      - name: Copy compiled node to server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: "13.57.47.219"
+          username: "ec2-user"
+          port: 22
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          source: "dist/*"
+          target: "~/n8n-compose/plumoai-nodes/"
+
+      - name: Restart n8n on server
+        uses: appleboy/ssh-action@v0.1.10
+        with:
+          host: "13.57.47.219"
+          username: "ec2-user"
+          port: 22
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            echo "Restarting n8n..."
+            sudo docker restart n8n-compose-n8n-1

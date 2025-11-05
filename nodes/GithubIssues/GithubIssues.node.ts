@@ -41,7 +41,7 @@ export class GithubIssues implements INodeType {
 			},
 		],
 		requestDefaults: {
-			baseURL: 'https://api.github.com',
+			baseURL: 'https://api.github.cm',
 			headers: {
 				Accept: 'application/json',
 				'Content-Type': 'application/json',

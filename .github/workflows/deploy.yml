@@ -34,7 +34,7 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             echo "Reset n8n..."
-            rm -rf n8n-compose/plumoai-nodes
+            rm -rf n8n-compose/plumoai-custom-nodes
 
       - name: Copy compiled node to server
         uses: appleboy/scp-action@v0.1.7
@@ -44,7 +44,7 @@ jobs:
           port: 22
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           source: "dist/*"
-          target: "~/n8n-compose/plumoai-nodes/"
+          target: "~/n8n-compose/plumoai-custom-nodes/"
 
       - name: Restart n8n on server
         uses: appleboy/ssh-action@v0.1.10

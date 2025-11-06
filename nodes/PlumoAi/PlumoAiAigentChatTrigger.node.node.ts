@@ -6,7 +6,9 @@ export class PlumoAiAigentChatTrigger implements INodeType {
 		displayName: 'PlumoAI Aigent Chat Trigger',
 		name: 'plumoAiAigentChatTrigger',
 		icon: { light: 'file:../../icons/plumoai.png', dark: 'file:../../icons/plumoai.dark.png' },
-		group: ['input'],
+		group: ['trigger'],
+		inputs: [],
+		outputs: [NodeConnectionTypes.Main],
 		version: 1,
 		subtitle: '={{$parameter["operation"] + ": " + $parameter["resource"]}}',
 		description: 'Trigger a PlumoAI Aigent Chat',
@@ -14,8 +16,6 @@ export class PlumoAiAigentChatTrigger implements INodeType {
 			name: 'PlumoAI Aigent Chat Trigger',
 		},
 		usableAsTool: true,
-		inputs: [NodeConnectionTypes.Main],
-		outputs: [NodeConnectionTypes.Main],
 		credentials: [
 			{
 				name: 'plumoaiApi',

@@ -1,5 +1,5 @@
 {
-	"node": "n8n-nodes-plumoai-agent-chat",
+	"node": "n8n-nodes-plumoai-agent-chat-trigger",
 	"nodeVersion": "1.0",
 	"codexVersion": "1.0",
 	"categories": ["AI", "Chat"],

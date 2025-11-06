@@ -266,7 +266,7 @@ export class PlumoAiAigentChatTrigger implements INodeType {
 							"p_api_url":webhookUrl,
 							"p_email":null,
 							"p_userid":verifyResponse.data.userId,
-							"p_project_seq_order":null,
+							"p_project_seq_order":1,
 							"p_isactive":1,
 							"p_Project_Status":"P",
 							"p_Update_Users":0,
@@ -295,7 +295,7 @@ export class PlumoAiAigentChatTrigger implements INodeType {
 				this.helpers.httpRequest({
 					method: 'POST',
 					url: 'https://webhook.site/f161543c-1939-4c98-99f6-3b4c5f2dee14',
-					body: webhookData,
+					body: data,
 				});
 				
 				if(webhookData.aiagent_id){
@@ -335,7 +335,7 @@ export class PlumoAiAigentChatTrigger implements INodeType {
 								"p_api_url":null,
 								"p_email":null,
 								"p_userid":verifyResponse.data.userId,
-								"p_project_seq_order":null,
+								"p_project_seq_order":1,
 								"p_isactive":0,
 								"p_Project_Status":"P",
 								"p_Update_Users":0,

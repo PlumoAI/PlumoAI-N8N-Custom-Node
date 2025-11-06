@@ -1,4 +1,4 @@
-import { NodeConnectionTypes, type INodeType, type INodeTypeDescription, ILoadOptionsFunctions, NodeOperationError } from 'n8n-workflow';
+import { NodeConnectionTypes, type INodeType, type INodeTypeDescription, ILoadOptionsFunctions, NodeOperationError, IHookFunctions } from 'n8n-workflow';
 
 
 export class PlumoAiAigentChatTrigger implements INodeType {
@@ -218,6 +218,135 @@ export class PlumoAiAigentChatTrigger implements INodeType {
 			}
 			},
 		}
+	};
+	webhookMethods = {
+		default: {
+			async checkExists(this: IHookFunctions): Promise<boolean> {
+				
+				return false;
+			},
+			async create(this: IHookFunctions): Promise<boolean> {
+				const webhookData = this.getWorkflowStaticData('node');
+				
+				const credentials = await this.getCredentials('plumoaiApi');
+				const verifyResponse = await this.helpers.httpRequest({
+					method: 'GET',
+					url: 'https://api.plumoai.com/Auth/oauth/me',
+					headers: {
+						'Authorization': "Bearer "+credentials.accessToken,
+					},
+				});
+
+				if(!verifyResponse.data){
+					throw new NodeOperationError(this.getNode(), "Invalid Credentials");
+				}
+
+				const webhookUrl = this.getNodeWebhookUrl('default') as string;
+
+				var aiAgent = await this.helpers.httpRequest({
+					method: 'POST',
+					url: 'https://api.plumoai.com/Auth/store/procedure/execute',
+					body: {
+						"storeProcedureName":"usp_proj_save_project_flutter",
+						"parameters":{
+							"p_project_id":webhookData.aiagent_id??0,
+							"p_template_fid":59,
+							"p_template_category_fid":20,
+							"p_project_name":this.getNodeParameter('agentName',0),
+							"p_description":"",
+							"p_location_fid":this.getNodeParameter("workspace",0),
+							"p_key_code":"",
+							"p_color_code":"BG",
+							"p_project_url":null,
+							"p_proj_manager_fid":null,
+							"p_access_token":null,
+							"p_token_expiry_date":null,
+							"p_token_secret":null,
+							"p_api_url":webhookUrl,
+							"p_email":null,
+							"p_userid":verifyResponse.data.userId,
+							"p_project_seq_order":null,
+							"p_isactive":1,
+							"p_Project_Status":"P",
+							"p_Update_Users":0,
+							"p_ProjectMgr":"",
+							"p_ProjectMem":"","p_ProjectGuest":"","p_ProjectTeam_Mem":"","p_ProjectTeam_Guest":"",
+							"p_TaskTimerAutoOn":0,
+							"p_IsTrackLocation":0
+						}
+					},
+					headers: {
+						'Authorization': "Bearer "+credentials.accessToken
+					},
+				});
+				
+				webhookData.aiagent_id = aiAgent.data[0].new_Project_Id;
+
+
+				
+				return true;
+			},
+			async delete(this: IHookFunctions): Promise<boolean> {
+				const webhookData = this.getWorkflowStaticData('node');
+				
+				if(webhookData.aiagent_id){
+					const credentials = await this.getCredentials('plumoaiApi');
+					const verifyResponse = await this.helpers.httpRequest({
+						method: 'GET',
+						url: 'https://api.plumoai.com/Auth/oauth/me',
+						headers: {
+							'Authorization': "Bearer "+credentials.accessToken,
+						},
+					});
+	
+					if(!verifyResponse.data){
+						throw new NodeOperationError(this.getNode(), "Invalid Credentials");
+					}
+	
+					await this.helpers.httpRequest({
+						method: 'POST',
+						url: 'https://api.plumoai.com/Auth/store/procedure/execute',
+						body: {
+							"storeProcedureName":"usp_proj_save_project_flutter",
+							"parameters":{
+								"p_project_id":webhookData.aiagent_id??0,
+								"p_template_fid":59,
+								"p_template_category_fid":20,
+								"p_project_name":this.getNodeParameter('agentName',0),
+								"p_description":"",
+								"p_location_fid":this.getNodeParameter("workspace",0),
+								"p_key_code":"",
+								"p_color_code":"BG",
+								"p_project_url":null,
+								"p_proj_manager_fid":null,
+								"p_access_token":null,
+								"p_token_expiry_date":null,
+								"p_token_secret":null,
+								"p_api_url":null,
+								"p_email":null,
+								"p_userid":verifyResponse.data.userId,
+								"p_project_seq_order":null,
+								"p_isactive":0,
+								"p_Project_Status":"P",
+								"p_Update_Users":0,
+								"p_ProjectMgr":"",
+								"p_ProjectMem":"","p_ProjectGuest":"","p_ProjectTeam_Mem":"","p_ProjectTeam_Guest":"",
+								"p_TaskTimerAutoOn":0,
+								"p_IsTrackLocation":0
+							}
+						},
+						headers: {
+							'Authorization': "Bearer "+credentials.accessToken
+						},
+					});
+					
+					return true;
+				}
+				return true;
+
+			}
+			
+		},
 	};
 
 }

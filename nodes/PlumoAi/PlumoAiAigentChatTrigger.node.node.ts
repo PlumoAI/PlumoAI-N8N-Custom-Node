@@ -69,12 +69,12 @@ export class PlumoAiAigentChatTrigger implements INodeType {
 				noDataExpression: true,
 				options: [
 					{
-						name: 'Create Aigent',
+						name: 'Create New Aigent',
 						value: 'new',
 					},
 					{
-						name: 'Update Aigent',
-						value: 'update',
+						name: 'Connect With Existing Aigent',
+						value: 'connect',
 					},
 				],
 				default: 'new',
@@ -89,11 +89,40 @@ export class PlumoAiAigentChatTrigger implements INodeType {
 				},
 				displayOptions: {
 					show: {
-						operation: ["new"],
+						operation: ["new", "connect"],
 					},
 				},
 				default: '',
 				description: 'Select a workspace from the API. Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>.',
+			},
+			{
+				displayName: 'Ai Agent',
+				name: 'agent',
+				type: 'options',
+				required: true,
+				typeOptions: {
+					loadOptionsMethod: 'getAgents',
+				},
+				displayOptions: {
+					show: {
+						operation: ["connect"],
+					},
+				},
+				default: '',
+				description: 'Select an Ai Agent from the API. Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>.',
+			},
+			{
+				displayName: 'Ai Agent Name',
+				name: 'agentName',
+				type: 'string',
+				required: true,
+				default: '',
+				description: 'Enter the name of the Ai Agent to create.',
+				displayOptions: {
+					show: {
+						operation: ["new"],
+					},
+				},
 			}
 			
 		],
@@ -139,6 +168,52 @@ export class PlumoAiAigentChatTrigger implements INodeType {
 				}));
 			}catch(error){
 				
+				return [{name:error,value:"Error Node"}];
+			}
+			},
+			async getAgents(this: ILoadOptionsFunctions) {
+				try{
+				const credentials = await this.getCredentials('plumoaiApi');
+				const verifyResponse = await this.helpers.httpRequest({
+					method: 'GET',
+					url: 'https://api.plumoai.com/Auth/oauth/me',
+					headers: {
+						'Authorization': "Bearer "+credentials.accessToken,
+					},
+				});
+
+				if(!verifyResponse.data){
+					throw new NodeOperationError(this.getNode(), "Invalid Credentials");
+				}
+
+
+				
+				const response = await this.helpers.httpRequest({
+					method: 'POST',
+					url: 'https://api.plumoai.com/company/store/procedure/execute',
+					body: {
+							"storeProcedureName":"usp_proj_get_project",
+							"parameters":{	
+								"p_project_id":0,
+								"p_LoggedInUser":verifyResponse.data.userId,
+								"p_CompanyID":verifyResponse.data.companyIds[0],
+								"p_Location_fid":this.getNodeParameter('workspace', 0),
+								"p_proj_status":"P",
+								"p_PageNumber":1,
+								"p_RowsOfPage":1000
+							}
+						},
+					headers: {
+						'Authorization': "Bearer "+credentials.accessToken,
+						'companyid':JSON.stringify(verifyResponse.data.companyIds)
+					},
+				});
+				
+				return response.data.map((project: any) => ({
+					name: project.project_name,
+					value: project.project_id,
+				}));
+			}catch(error){
 				return [{name:error,value:"Error Node"}];
 			}
 			},

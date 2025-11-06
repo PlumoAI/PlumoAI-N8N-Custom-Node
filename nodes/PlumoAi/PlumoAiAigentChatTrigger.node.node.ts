@@ -101,7 +101,7 @@ export class PlumoAiAigentChatTrigger implements INodeType {
 
 	methods = {
 		loadOptions: {
-			async getProjects(this: ILoadOptionsFunctions) {
+			async getWorkspaces(this: ILoadOptionsFunctions) {
 				try{
 				const credentials = await this.getCredentials('plumoaiApi');
 				const verifyResponse = await this.helpers.httpRequest({

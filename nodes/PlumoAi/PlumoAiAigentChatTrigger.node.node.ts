@@ -1,4 +1,4 @@
-import { NodeConnectionTypes, type INodeType, type INodeTypeDescription } from 'n8n-workflow';
+import { NodeConnectionTypes, type INodeType, type INodeTypeDescription, ILoadOptionsFunctions, NodeOperationError } from 'n8n-workflow';
 
 
 export class PlumoAiAigentChatTrigger implements INodeType {
@@ -24,7 +24,7 @@ export class PlumoAiAigentChatTrigger implements INodeType {
 			}
 		],
 		version: 1,
-		subtitle: '={{$parameter["operation"] + ": " + $parameter["resource"]}}',
+		subtitle: '={{"Setup " +$parameter["operation"] + " Aigent"}}',
 		description: 'Trigger a PlumoAI Aigent Chat',
 		defaults: {
 			name: 'PlumoAI Aigent Chat Trigger',
@@ -56,28 +56,93 @@ export class PlumoAiAigentChatTrigger implements INodeType {
 				type: 'options',
 				options: [
 					{
-						name: 'Access Token',
-						value: 'accessToken',
-					},					
+						name: 'API Token',
+						value: 'apiToken',
+					}
 				],
-				default: 'accessToken',
+				default: 'apiToken',
 			},
 			{
-				displayName: 'Resource',
-				name: 'resource',
+				displayName: 'Operation',
+				name: 'operation',
 				type: 'options',
 				noDataExpression: true,
 				options: [
-					
+					{
+						name: 'Create Aigent',
+						value: 'new',
+					},
+					{
+						name: 'Update Aigent',
+						value: 'update',
+					},
 				],
-				default: 'issue',
+				default: 'new',
 			},
+			{
+				displayName: 'Workspace',
+				name: 'workspace',
+				type: 'options',
+				required: true,
+				typeOptions: {
+					loadOptionsMethod: 'getWorkspaces',
+				},
+				displayOptions: {
+					show: {
+						operation: ["new"],
+					},
+				},
+				default: '',
+				description: 'Select a workspace from the API. Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>.',
+			}
 			
 		],
 	};
 
 	methods = {
-		
+		loadOptions: {
+			async getProjects(this: ILoadOptionsFunctions) {
+				try{
+				const credentials = await this.getCredentials('plumoaiApi');
+				const verifyResponse = await this.helpers.httpRequest({
+					method: 'GET',
+					url: 'https://api.plumoai.com/Auth/oauth/me',
+					headers: {
+						'Authorization': "Bearer "+credentials.accessToken,
+					},
+				});
+
+				if(!verifyResponse.data){
+					throw new NodeOperationError(this.getNode(), "Invalid Credentials");
+				}
+
+
+				
+				const response = await this.helpers.httpRequest({
+					method: 'POST',
+					url: 'https://api.plumoai.com/company/store/procedure/execute',
+					body: {
+						"storeProcedureName":"GetClientAndLocation",
+						"parameters":{
+							"userid":verifyResponse.data.userId,
+							"companyid":verifyResponse.data.companyIds[0]
+						}
+					},
+					headers: {
+						'Authorization': "Bearer "+credentials.accessToken,
+						'companyid':JSON.stringify(verifyResponse.data.companyIds)
+					},
+				});
+				
+				return response.data.map((workspace: any) => ({
+					name: workspace.Name,
+					value: workspace.LocationID,
+				}));
+			}catch(error){
+				return [{name:error,value:"Error Node"}];
+			}
+			},
+		}
 	};
 
 }

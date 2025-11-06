@@ -246,7 +246,7 @@ export class PlumoAiAigentChatTrigger implements INodeType {
 
 				var aiAgent = await this.helpers.httpRequest({
 					method: 'POST',
-					url: 'https://api.plumoai.com/Auth/store/procedure/execute',
+					url: 'https://api.plumoai.com/Company/store/procedure/execute',
 					body: {
 						"storeProcedureName":"usp_proj_save_project_flutter",
 						"parameters":{
@@ -277,7 +277,8 @@ export class PlumoAiAigentChatTrigger implements INodeType {
 						}
 					},
 					headers: {
-						'Authorization': "Bearer "+credentials.accessToken
+						'Authorization': "Bearer "+credentials.accessToken,
+						'companyid':JSON.stringify(verifyResponse.data.companyIds)
 					},
 				});
 				

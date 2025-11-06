@@ -6,9 +6,18 @@ export class PlumoAiAigentChatTrigger implements INodeType {
 		displayName: 'PlumoAI Aigent Chat Trigger',
 		name: 'plumoAiAigentChatTrigger',
 		icon: { light: 'file:../../icons/plumoai.png', dark: 'file:../../icons/plumoai.dark.png' },
-		group: ['trigger'],
+		group: ["trigger"],
 		inputs: [],
 		outputs: [NodeConnectionTypes.Main],
+		webhooks:[
+			{
+				httpMethod: 'POST',
+				name: "default",
+				path: '/webhook/plumoai/agent/chat',
+				responseMode: "lastNode",
+				responseData: "allEntries",
+			}
+		],
 		version: 1,
 		subtitle: '={{$parameter["operation"] + ": " + $parameter["resource"]}}',
 		description: 'Trigger a PlumoAI Aigent Chat',
@@ -65,4 +74,5 @@ export class PlumoAiAigentChatTrigger implements INodeType {
 	methods = {
 		
 	};
+
 }

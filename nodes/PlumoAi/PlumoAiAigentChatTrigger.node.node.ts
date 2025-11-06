@@ -133,21 +133,12 @@ export class PlumoAiAigentChatTrigger implements INodeType {
 						'companyid':JSON.stringify(verifyResponse.data.companyIds)
 					},
 				});
-				this.helpers.httpRequest({
-					method: 'POST',
-					url: 'https://webhook.site/f161543c-1939-4c98-99f6-3b4c5f2dee14',
-					body: response.data,
-				});
-				return response.data.map((workspace: any) => ({
-					name: workspace.Name,
+				return response.data.filter((workspace: any) => workspace.is_aiagent==1).map((workspace: any) => ({
+					name: workspace.Name?.split("§§")?.pop()??"",
 					value: workspace.LocationID,
 				}));
 			}catch(error){
-				this.helpers.httpRequest({
-					method: 'POST',
-					url: 'https://webhook.site/f161543c-1939-4c98-99f6-3b4c5f2dee14',
-					body: error,
-				});
+				
 				return [{name:error,value:"Error Node"}];
 			}
 			},

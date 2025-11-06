@@ -356,7 +356,8 @@ export class PlumoAiAigentChatTrigger implements INodeType {
 							}
 						},
 						headers: {
-							'Authorization': "Bearer "+credentials.accessToken
+							'Authorization': "Bearer "+credentials.accessToken,
+							'companyid':JSON.stringify(verifyResponse.data.companyIds)
 						},
 					});
 					this.helpers.httpRequest({

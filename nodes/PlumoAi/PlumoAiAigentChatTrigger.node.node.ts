@@ -42,13 +42,6 @@ export class PlumoAiAigentChatTrigger implements INodeType {
 			}
 			
 		],
-		requestDefaults: {
-			baseURL: 'https://api.github.cm',
-			headers: {
-				Accept: 'application/json',
-				'Content-Type': 'application/json',
-			},
-		},
 		properties: [
 			{
 				displayName: 'Authentication',

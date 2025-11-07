@@ -420,7 +420,7 @@ export class PlumoAiAigentChatTrigger implements INodeType {
 					url: `${API_BASE_URL}/company/aiagentchat/session/name`,
 					headers: {
 						'Authorization': "Bearer "+credentials.accessToken,
-						'companyids': verifyResponse.data.companyIds[0].toString(),
+						'companyids': 1349,
 						'Content-Type': 'application/json',
 					},
 					body: {

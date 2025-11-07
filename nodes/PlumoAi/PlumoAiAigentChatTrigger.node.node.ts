@@ -9,7 +9,7 @@ export class PlumoAiAigentChatTrigger implements INodeType {
 
 		group: ["trigger"],
 		inputs: [NodeConnectionTypes.AiLanguageModel],
-		outputs: [NodeConnectionTypes.Main],
+		outputs: [NodeConnectionTypes.AiAgent],
 		webhooks:[
 			{
 				httpMethod: 'POST',
@@ -386,7 +386,7 @@ export class PlumoAiAigentChatTrigger implements INodeType {
 	
 		var chatInput = this.getBodyData() as unknown as any;
 
-		var data = await this.getInputConnectionData(NodeConnectionTypes.AiLanguageModel,0);
+		var data = await this.getInputConnectionData(NodeConnectionTypes.AiAgent,0);
 		
 		return {
 			workflowData: [

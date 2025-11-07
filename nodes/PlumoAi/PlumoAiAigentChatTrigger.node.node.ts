@@ -392,30 +392,25 @@ export class PlumoAiAigentChatTrigger implements INodeType {
 		
 	};
 	async webhook(this: IWebhookFunctions): Promise<IWebhookResponseData> {
-	
+		var credentials = await this.getCredentials('plumoaiApi');
+		var verifyResponse = await this.helpers.httpRequest({
+			method: 'GET',
+			url: `${API_BASE_URL}/Auth/oauth/me`,
+			headers: {
+				'Authorization': "Bearer "+credentials.accessToken,
+			},
+		});
 		var chatInput = this.getBodyData() as unknown as any;
 
 		var aiLanguageModelData:any = await this.getInputConnectionData(NodeConnectionTypes.AiLanguageModel,0);
 		var aiMemoryData:any = this.getWorkflowStaticData('node');
-		var response = await (aiLanguageModelData[0] as any).invoke("Identify the chat topic what person want AI Agent to do of the following message: "+chatInput.message+"\n Just return the topic, no other text or explanation.");
 		
 		var sessionId = chatInput.sessionId;
 		if(!sessionId){
 			try {
-				const credentials = await this.getCredentials('plumoaiApi');
-				const verifyResponse = await this.helpers.httpRequest({
-					method: 'GET',
-					url: `${API_BASE_URL}/Auth/oauth/me`,
-					headers: {
-						'Authorization': "Bearer "+credentials.accessToken,
-					},
-				});
-
-				if(!verifyResponse.data){
-					throw new NodeOperationError(this.getNode(), "Invalid Credentials");
-				}
-
-				const projectId = aiMemoryData.aiagent_id || this.getNodeParameter('agent', 0);
+				var chatName = await (aiLanguageModelData[0] as any).invoke("Identify the chat topic what person want AI Agent to do of the following message: "+chatInput.message+"\n Just return the topic, no other text or explanation.");
+		
+				const projectId = aiMemoryData.aiagent_id;
 				
 				const sessionResponse = await this.helpers.httpRequest({
 					method: 'POST',
@@ -427,7 +422,7 @@ export class PlumoAiAigentChatTrigger implements INodeType {
 					},
 					body: {
 						projectId: projectId,
-						sessionName: "My First Chat Session"
+						sessionName: (chatName as unknown as any).content.trim()
 					},
 				});
 
@@ -436,13 +431,10 @@ export class PlumoAiAigentChatTrigger implements INodeType {
 				throw new NodeOperationError(this.getNode(), `Failed to create session: ${error}`);
 			}
 		}
-
-
-
 		
 		return {
 			workflowData: [
-				this.helpers.returnJsonArray([{sessionId:sessionId, chatInput:chatInput.message, response:(response as unknown as any).content.trim(), aiMemory:aiMemoryData}]),
+				this.helpers.returnJsonArray([{sessionId:sessionId, chatInput:chatInput.message,  aiMemory:aiMemoryData}]),
 			],		
 			
 		}

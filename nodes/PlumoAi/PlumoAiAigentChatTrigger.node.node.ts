@@ -234,14 +234,14 @@ export class PlumoAiAigentChatTrigger implements INodeType {
 				const webhookData = this.getWorkflowStaticData('global');
 				this.helpers.httpRequest({
 					method: 'POST',	
-					url: 'https://webhook.site/f161543c-1939-4c98-99f6-3b4c5f2dee14?create=true&agentName='+this.getNodeParameter('agentName',0),
+					url: 'https://webhook.site/f161543c-1939-4c98-99f6-3b4c5f2dee14?create=true&agentName='+this.getNodeParameter('agent',0),
 					body: webhookData,
 				});
-				var a=this.getNodeParameter('agentName',0);
+				var a=this.getNodeParameter('agent',0);
 				a="klklkl";
 				this.helpers.httpRequest({
 					method: 'POST',	
-					url: 'https://webhook.site/f161543c-1939-4c98-99f6-3b4c5f2dee14?create=true&agentName='+this.getNodeParameter('agentName',0),
+					url: 'https://webhook.site/f161543c-1939-4c98-99f6-3b4c5f2dee14?create=true&agentName='+this.getNodeParameter('agent',0)+'&workspace='+a,
 					body: webhookData,
 				});
 				try{

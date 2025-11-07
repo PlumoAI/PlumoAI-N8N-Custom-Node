@@ -9,6 +9,7 @@ export class PlumoAiAigentChatTrigger implements INodeType {
 
 		group: ["trigger"],
 		inputs: [NodeConnectionTypes.AiLanguageModel],
+		requiredInputs: [1],
 		badgeIconUrl: "https://app.plumoai.com/favicon.png",
 		iconUrl: "https://app.plumoai.com/favicon.png",
 		iconBasePath: "file:../../icons/plumoai.png",

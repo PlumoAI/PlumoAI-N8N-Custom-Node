@@ -416,7 +416,7 @@ export class PlumoAiAigentChatTrigger implements INodeType {
 		
 				
 					await this.helpers.httpRequest({
-					method: 'PUT',
+					method: 'POST',
 					url: `${API_BASE_URL}/company/aiagentchat/session/name`,
 					headers: {
 						'Authorization': "Bearer "+credentials.accessToken,
@@ -425,7 +425,7 @@ export class PlumoAiAigentChatTrigger implements INodeType {
 					},
 					body: {
 						sessionId: chatInput.sessionId || sessionId,
-						sessionName: chatName
+						sessionName: (chatName as unknown as any).content.trim()
 					},
 				});				
 			} catch(error) {

@@ -415,7 +415,7 @@ export class PlumoAiAigentChatTrigger implements INodeType {
 					var chatName = await (aiLanguageModelData[0] as any).invoke("Identify the chat topic what person want AI Agent to do of the following message: "+chatInput.message+"\n Just return the topic, no other text or explanation.");
 		
 				
-					const updateResponse = await this.helpers.httpRequest({
+					await this.helpers.httpRequest({
 					method: 'PUT',
 					url: `${API_BASE_URL}/company/aiagentchat/session/name`,
 					headers: {
@@ -427,13 +427,7 @@ export class PlumoAiAigentChatTrigger implements INodeType {
 						sessionId: chatInput.sessionId || sessionId,
 						sessionName: chatName
 					},
-				});
-
-				return {
-					workflowData: [
-						this.helpers.returnJsonArray([{sessionId: sessionId, updateResponse: updateResponse}]),
-					],
-				};
+				});				
 			} catch(error) {
 				throw new NodeOperationError(this.getNode(), `Failed to update chat name: ${error}`);
 			}

@@ -393,13 +393,13 @@ export class PlumoAiAigentChatTrigger implements INodeType {
 	};
 	async webhook(this: IWebhookFunctions): Promise<IWebhookResponseData> {
 		var credentials = await this.getCredentials('plumoaiApi');
-		var verifyResponse = await this.helpers.httpRequest({
-			method: 'GET',
-			url: `${API_BASE_URL}/Auth/oauth/me`,
-			headers: {
-				'Authorization': "Bearer "+credentials.accessToken,
-			},
-		});
+		// var verifyResponse = await this.helpers.httpRequest({
+		// 	method: 'GET',
+		// 	url: `${API_BASE_URL}/Auth/oauth/me`,
+		// 	headers: {
+		// 		'Authorization': "Bearer "+credentials.accessToken,
+		// 	},
+		// });
 		var chatInput = this.getBodyData() as unknown as any;
 
 		var sessionId = chatInput.sessionId;

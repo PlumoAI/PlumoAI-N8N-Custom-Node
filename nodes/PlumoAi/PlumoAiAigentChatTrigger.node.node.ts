@@ -392,45 +392,45 @@ export class PlumoAiAigentChatTrigger implements INodeType {
 		
 	};
 	async webhook(this: IWebhookFunctions): Promise<IWebhookResponseData> {
-		var credentials = await this.getCredentials('plumoaiApi');
-		var verifyResponse = await this.helpers.httpRequest({
-			method: 'GET',
-			url: `${API_BASE_URL}/Auth/oauth/me`,
-			headers: {
-				'Authorization': "Bearer "+credentials.accessToken,
-			},
-		});
+		// var credentials = await this.getCredentials('plumoaiApi');
+		// var verifyResponse = await this.helpers.httpRequest({
+		// 	method: 'GET',
+		// 	url: `${API_BASE_URL}/Auth/oauth/me`,
+		// 	headers: {
+		// 		'Authorization': "Bearer "+credentials.accessToken,
+		// 	},
+		// });
 		var chatInput = this.getBodyData() as unknown as any;
 
-		var aiLanguageModelData:any = await this.getInputConnectionData(NodeConnectionTypes.AiLanguageModel,0);
+		// var aiLanguageModelData:any = await this.getInputConnectionData(NodeConnectionTypes.AiLanguageModel,0);
 		var aiMemoryData:any = this.getWorkflowStaticData('node');
 		
 		var sessionId = chatInput.sessionId;
-		if(!sessionId){
-			try {
-				var chatName = await (aiLanguageModelData[0] as any).invoke("Identify the chat topic what person want AI Agent to do of the following message: "+chatInput.message+"\n Just return the topic, no other text or explanation.");
+		// if(!sessionId){
+		// 	try {
+		// 		var chatName = await (aiLanguageModelData[0] as any).invoke("Identify the chat topic what person want AI Agent to do of the following message: "+chatInput.message+"\n Just return the topic, no other text or explanation.");
 		
-				const projectId = aiMemoryData.aiagent_id;
+		// 		const projectId = aiMemoryData.aiagent_id;
 				
-				const sessionResponse = await this.helpers.httpRequest({
-					method: 'POST',
-					url: `${API_BASE_URL}/company/aiagentchat/session`,
-					headers: {
-						'Authorization': "Bearer "+credentials.accessToken,
-						'companyids': verifyResponse.data.companyIds[0].toString(),
-						'Content-Type': 'application/json',
-					},
-					body: {
-						projectId: projectId,
-						sessionName: (chatName as unknown as any).content.trim()
-					},
-				});
+		// 		const sessionResponse = await this.helpers.httpRequest({
+		// 			method: 'POST',
+		// 			url: `${API_BASE_URL}/company/aiagentchat/session`,
+		// 			headers: {
+		// 				'Authorization': "Bearer "+credentials.accessToken,
+		// 				'companyids': verifyResponse.data.companyIds[0].toString(),
+		// 				'Content-Type': 'application/json',
+		// 			},
+		// 			body: {
+		// 				projectId: projectId,
+		// 				sessionName: (chatName as unknown as any).content.trim()
+		// 			},
+		// 		});
 
-				sessionId = sessionResponse.data?.sessionId || sessionResponse.sessionId;
-			} catch(error) {
-				throw new NodeOperationError(this.getNode(), `Failed to create session: ${error}`);
-			}
-		}
+		// 		sessionId = sessionResponse.data?.sessionId || sessionResponse.sessionId;
+		// 	} catch(error) {
+		// 		throw new NodeOperationError(this.getNode(), `Failed to create session: ${error}`);
+		// 	}
+		// }
 		
 		return {
 			workflowData: [

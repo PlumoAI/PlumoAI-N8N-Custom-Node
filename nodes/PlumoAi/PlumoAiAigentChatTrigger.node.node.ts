@@ -8,7 +8,7 @@ export class PlumoAiAigentChatTrigger implements INodeType {
 		icon: "fa:comments",
 
 		group: ["trigger"],
-		inputs: [NodeConnectionTypes.AiLanguageModel],
+		inputs: [NodeConnectionTypes.AiLanguageModel,NodeConnectionTypes.AiMemory],
 		requiredInputs: [1],
 		
 		badgeIconUrl: "https://app.plumoai.com/favicon.png",
@@ -396,12 +396,12 @@ export class PlumoAiAigentChatTrigger implements INodeType {
 		var chatInput = this.getBodyData() as unknown as any;
 
 		var aiLanguageModelData:any = await this.getInputConnectionData(NodeConnectionTypes.AiLanguageModel,0);
-
+		var aiMemoryData:any = await this.getInputConnectionData(NodeConnectionTypes.AiMemory,0);
 		var response = await (aiLanguageModelData[0] as any).invoke("Identify the chat topic what person want AI Agent to do of the following message: "+chatInput.message+"\n Just return the topic, no other text or explanation.");
 		
 		return {
 			workflowData: [
-				this.helpers.returnJsonArray([{sessionId:chatInput.sessionId, chatInput:chatInput.message, response:(response as unknown as any).content.trim()}]),
+				this.helpers.returnJsonArray([{sessionId:chatInput.sessionId, chatInput:chatInput.message, response:(response as unknown as any).content.trim(), aiMemory:aiMemoryData}]),
 			],		
 			
 		}

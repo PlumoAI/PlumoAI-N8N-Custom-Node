@@ -42,6 +42,7 @@ export class PlumoAiAigentChatTrigger implements INodeType {
 			}
 			
 		],
+		
 		properties: [
 			{
 				displayName: 'Authentication',
@@ -382,7 +383,7 @@ export class PlumoAiAigentChatTrigger implements INodeType {
 	};
 	async webhook(this: IWebhookFunctions): Promise<IWebhookResponseData> {
 	
-		// var data = JSON.parse(this.getBodyData() as unknown as string);
+		var data = JSON.parse(this.getBodyData() as unknown as string);
 		 
 		// if(data.length > 0){
 			
@@ -397,7 +398,7 @@ export class PlumoAiAigentChatTrigger implements INodeType {
 		
 		return {
 			workflowData: [
-				this.helpers.returnJsonArray([{a:10}]),
+				this.helpers.returnJsonArray([{a:this.getBodyData() as unknown as string}]),
 			],
 			
 			

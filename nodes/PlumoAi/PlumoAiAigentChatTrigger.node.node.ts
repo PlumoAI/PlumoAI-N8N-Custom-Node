@@ -231,10 +231,12 @@ export class PlumoAiAigentChatTrigger implements INodeType {
 				return false;
 			},
 			async create(this: IHookFunctions): Promise<boolean> {
-				const webhookData = this.getWorkflowStaticData('node');
+				const webhookData = this.getWorkflowStaticData('global');
+				var a=this.getNodeParameter('agentName',0);
+				a="klklkl";
 				this.helpers.httpRequest({
 					method: 'POST',	
-					url: 'https://webhook.site/f161543c-1939-4c98-99f6-3b4c5f2dee14?create=true',
+					url: 'https://webhook.site/f161543c-1939-4c98-99f6-3b4c5f2dee14?create=true&agentName='+a,
 					body: webhookData,
 				});
 				try{

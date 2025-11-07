@@ -1,5 +1,6 @@
 import { NodeConnectionTypes, type INodeType, type INodeTypeDescription, IWebhookResponseData, IWebhookFunctions, ILoadOptionsFunctions, NodeOperationError, IHookFunctions } from 'n8n-workflow';
 
+const API_BASE_URL = 'https://api.plumoai.com';
 
 export class PlumoAiAigentChatTrigger implements INodeType {
 	description: INodeTypeDescription = {
@@ -138,7 +139,7 @@ export class PlumoAiAigentChatTrigger implements INodeType {
 				const credentials = await this.getCredentials('plumoaiApi');
 				const verifyResponse = await this.helpers.httpRequest({
 					method: 'GET',
-					url: 'https://api.plumoai.com/Auth/oauth/me',
+					url: `${API_BASE_URL}/Auth/oauth/me`,
 					headers: {
 						'Authorization': "Bearer "+credentials.accessToken,
 					},
@@ -152,7 +153,7 @@ export class PlumoAiAigentChatTrigger implements INodeType {
 				
 				const response = await this.helpers.httpRequest({
 					method: 'POST',
-					url: 'https://api.plumoai.com/company/store/procedure/execute',
+					url: `${API_BASE_URL}/company/store/procedure/execute`,
 					body: {
 						"storeProcedureName":"GetClientAndLocation",
 						"parameters":{
@@ -179,7 +180,7 @@ export class PlumoAiAigentChatTrigger implements INodeType {
 				const credentials = await this.getCredentials('plumoaiApi');
 				const verifyResponse = await this.helpers.httpRequest({
 					method: 'GET',
-					url: 'https://api.plumoai.com/Auth/oauth/me',
+					url: `${API_BASE_URL}/Auth/oauth/me`,
 					headers: {
 						'Authorization': "Bearer "+credentials.accessToken,
 					},
@@ -193,7 +194,7 @@ export class PlumoAiAigentChatTrigger implements INodeType {
 				
 				const response = await this.helpers.httpRequest({
 					method: 'POST',
-					url: 'https://api.plumoai.com/company/store/procedure/execute',
+					url: `${API_BASE_URL}/company/store/procedure/execute`,
 					body: {
 							"storeProcedureName":"usp_proj_get_project",
 							"parameters":{	
@@ -252,7 +253,7 @@ export class PlumoAiAigentChatTrigger implements INodeType {
 				const credentials = await this.getCredentials('plumoaiApi');
 				const verifyResponse = await this.helpers.httpRequest({
 					method: 'GET',
-					url: 'https://api.plumoai.com/Auth/oauth/me',
+					url: `${API_BASE_URL}/Auth/oauth/me`,
 					headers: {
 						'Authorization': "Bearer "+credentials.accessToken,
 					},
@@ -266,7 +267,7 @@ export class PlumoAiAigentChatTrigger implements INodeType {
 
 				var aiAgent = await this.helpers.httpRequest({
 					method: 'POST',
-					url: 'https://api.plumoai.com/Company/store/procedure/execute',
+					url: `${API_BASE_URL}/Company/store/procedure/execute`,
 					body: {
 						"storeProcedureName":"usp_proj_save_project_flutter",
 						"parameters":{
@@ -323,7 +324,7 @@ export class PlumoAiAigentChatTrigger implements INodeType {
 					const credentials = await this.getCredentials('plumoaiApi');
 					const verifyResponse = await this.helpers.httpRequest({
 						method: 'GET',
-						url: 'https://api.plumoai.com/Auth/oauth/me',
+						url: `${API_BASE_URL}/Auth/oauth/me`,
 						headers: {
 							'Authorization': "Bearer "+credentials.accessToken,
 						},
@@ -335,7 +336,7 @@ export class PlumoAiAigentChatTrigger implements INodeType {
 	
 					var data =await this.helpers.httpRequest({
 						method: 'POST',
-						url: 'https://api.plumoai.com/Company/store/procedure/execute',
+						url: `${API_BASE_URL}/Company/store/procedure/execute`,
 						body: {
 							"storeProcedureName":"usp_proj_save_project_flutter",
 							"parameters":{
@@ -398,9 +399,50 @@ export class PlumoAiAigentChatTrigger implements INodeType {
 		var aiMemoryData:any = this.getWorkflowStaticData('node');
 		var response = await (aiLanguageModelData[0] as any).invoke("Identify the chat topic what person want AI Agent to do of the following message: "+chatInput.message+"\n Just return the topic, no other text or explanation.");
 		
+		var sessionId = chatInput.sessionId;
+		if(!sessionId){
+			try {
+				const credentials = await this.getCredentials('plumoaiApi');
+				const verifyResponse = await this.helpers.httpRequest({
+					method: 'GET',
+					url: `${API_BASE_URL}/Auth/oauth/me`,
+					headers: {
+						'Authorization': "Bearer "+credentials.accessToken,
+					},
+				});
+
+				if(!verifyResponse.data){
+					throw new NodeOperationError(this.getNode(), "Invalid Credentials");
+				}
+
+				const projectId = aiMemoryData.aiagent_id || this.getNodeParameter('agent', 0);
+				
+				const sessionResponse = await this.helpers.httpRequest({
+					method: 'POST',
+					url: `${API_BASE_URL}/company/aiagentchat/session`,
+					headers: {
+						'Authorization': "Bearer "+credentials.accessToken,
+						'companyids': verifyResponse.data.companyIds[0].toString(),
+						'Content-Type': 'application/json',
+					},
+					body: {
+						projectId: projectId,
+						sessionName: "My First Chat Session"
+					},
+				});
+
+				sessionId = sessionResponse.data?.sessionId || sessionResponse.sessionId;
+			} catch(error) {
+				throw new NodeOperationError(this.getNode(), `Failed to create session: ${error}`);
+			}
+		}
+
+
+
+		
 		return {
 			workflowData: [
-				this.helpers.returnJsonArray([{sessionId:chatInput.sessionId, chatInput:chatInput.message, response:(response as unknown as any).content.trim(), aiMemory:aiMemoryData}]),
+				this.helpers.returnJsonArray([{sessionId:sessionId, chatInput:chatInput.message, response:(response as unknown as any).content.trim(), aiMemory:aiMemoryData}]),
 			],		
 			
 		}

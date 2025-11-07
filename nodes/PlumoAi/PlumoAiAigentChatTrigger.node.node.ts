@@ -392,56 +392,59 @@ export class PlumoAiAigentChatTrigger implements INodeType {
 		
 	};
 	async webhook(this: IWebhookFunctions): Promise<IWebhookResponseData> {
-		// var credentials = await this.getCredentials('plumoaiApi');
-		// var verifyResponse = await this.helpers.httpRequest({
-		// 	method: 'GET',
-		// 	url: `${API_BASE_URL}/Auth/oauth/me`,
-		// 	headers: {
-		// 		'Authorization': "Bearer "+credentials.accessToken,
-		// 	},
-		// });
+		var credentials = await this.getCredentials('plumoaiApi');
+		var verifyResponse = await this.helpers.httpRequest({
+			method: 'GET',
+			url: `${API_BASE_URL}/Auth/oauth/me`,
+			headers: {
+				'Authorization': "Bearer "+credentials.accessToken,
+			},
+		});
 		var chatInput = this.getBodyData() as unknown as any;
 
-		// var aiLanguageModelData:any = await this.getInputConnectionData(NodeConnectionTypes.AiLanguageModel,0);
-		var aiMemoryData:any = this.getWorkflowStaticData('node');
-		
 		var sessionId = chatInput.sessionId;
-
 		
-
-		// if(!sessionId){
-		// 	try {
-		// 		var chatName = await (aiLanguageModelData[0] as any).invoke("Identify the chat topic what person want AI Agent to do of the following message: "+chatInput.message+"\n Just return the topic, no other text or explanation.");
+		var queryData = this.getQueryData() as any;
 		
-		// 		const projectId = aiMemoryData.aiagent_id;
+		// Check if queryData contains update chat name request
+		if (queryData && (queryData.updateChatName || 
+			Object.keys(queryData).some(key => key.toLowerCase().includes('update') && key.toLowerCase().includes('chat') && key.toLowerCase().includes('name')))) {
+			try {
+
+					var aiLanguageModelData:any = await this.getInputConnectionData(NodeConnectionTypes.AiLanguageModel,0);
+					var chatName = await (aiLanguageModelData[0] as any).invoke("Identify the chat topic what person want AI Agent to do of the following message: "+chatInput.message+"\n Just return the topic, no other text or explanation.");
+		
 				
-		// 		const sessionResponse = await this.helpers.httpRequest({
-		// 			method: 'POST',
-		// 			url: `${API_BASE_URL}/company/aiagentchat/session`,
-		// 			headers: {
-		// 				'Authorization': "Bearer "+credentials.accessToken,
-		// 				'companyids': verifyResponse.data.companyIds[0].toString(),
-		// 				'Content-Type': 'application/json',
-		// 			},
-		// 			body: {
-		// 				projectId: projectId,
-		// 				sessionName: (chatName as unknown as any).content.trim()
-		// 			},
-		// 		});
+					const updateResponse = await this.helpers.httpRequest({
+					method: 'PUT',
+					url: `${API_BASE_URL}/company/aiagentchat/session/name`,
+					headers: {
+						'Authorization': "Bearer "+credentials.accessToken,
+						'companyids': verifyResponse.data.companyIds[0].toString(),
+						'Content-Type': 'application/json',
+					},
+					body: {
+						sessionId: chatInput.sessionId || sessionId,
+						sessionName: chatName
+					},
+				});
 
-		// 		sessionId = sessionResponse.data?.sessionId || sessionResponse.sessionId;
-		// 	} catch(error) {
-		// 		throw new NodeOperationError(this.getNode(), `Failed to create session: ${error}`);
-		// 	}
-		// }
+				return {
+					workflowData: [
+						this.helpers.returnJsonArray([{sessionId: sessionId, updateResponse: updateResponse}]),
+					],
+				};
+			} catch(error) {
+				throw new NodeOperationError(this.getNode(), `Failed to update chat name: ${error}`);
+			}
+		}
+		
 		
 		return {
 			workflowData: [
-				this.helpers.returnJsonArray([{sessionId:sessionId, chatInput:chatInput.message,  aiMemory:aiMemoryData}]),
+				this.helpers.returnJsonArray([{sessionId:sessionId, chatInput:chatInput.message}]),
 			],	
-			webhookResponse:{
-				newChatSession:"My First Chat Session"
-			}	
+			
 			
 		}
 	}

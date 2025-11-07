@@ -11,7 +11,7 @@ export class PlumoAiAigentChatTrigger implements INodeType {
 		inputs: [NodeConnectionTypes.AiLanguageModel],
 		requiredInputs: [1],
 		badgeIconUrl: "https://app.plumoai.com/favicon.png",
-		iconUrl: "https://app.plumoai.com/favicon.png",
+		iconUrl: "/../../https://app.plumoai.com/favicon.png",
 		iconBasePath: "file:../../icons/plumoai.png",
 		inputNames: ["Ai Language Model"],
 		outputNames: ["Ai Agent"],

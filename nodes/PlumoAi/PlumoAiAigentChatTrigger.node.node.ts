@@ -406,6 +406,9 @@ export class PlumoAiAigentChatTrigger implements INodeType {
 		var aiMemoryData:any = this.getWorkflowStaticData('node');
 		
 		var sessionId = chatInput.sessionId;
+
+		
+
 		// if(!sessionId){
 		// 	try {
 		// 		var chatName = await (aiLanguageModelData[0] as any).invoke("Identify the chat topic what person want AI Agent to do of the following message: "+chatInput.message+"\n Just return the topic, no other text or explanation.");
@@ -435,7 +438,10 @@ export class PlumoAiAigentChatTrigger implements INodeType {
 		return {
 			workflowData: [
 				this.helpers.returnJsonArray([{sessionId:sessionId, chatInput:chatInput.message,  aiMemory:aiMemoryData}]),
-			],		
+			],	
+			webhookResponse:{
+				newChatSession:"My First Chat Session"
+			}	
 			
 		}
 	}

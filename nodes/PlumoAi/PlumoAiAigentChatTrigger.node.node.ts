@@ -401,7 +401,7 @@ export class PlumoAiAigentChatTrigger implements INodeType {
 		
 		return {
 			workflowData: [
-				this.helpers.returnJsonArray([{sessionId:chatInput.sessionId, chatInput:chatInput.message, response:response as unknown as any}]),
+				this.helpers.returnJsonArray([{sessionId:chatInput.sessionId, chatInput:chatInput.message, response:(response as unknown as any).content.trim()}]),
 			],		
 			
 		}

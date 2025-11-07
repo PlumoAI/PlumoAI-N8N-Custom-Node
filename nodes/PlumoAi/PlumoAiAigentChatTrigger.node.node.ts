@@ -386,18 +386,11 @@ export class PlumoAiAigentChatTrigger implements INodeType {
 	
 		var chatInput = this.getBodyData() as unknown as any;
 
-
-		this.helpers.httpRequest({
-			method: 'POST',
-			url: 'https://webhook.site/f161543c-1939-4c98-99f6-3b4c5f2dee14',
-			body: {
-				"storeProcedureName":(await this.getInputConnectionData(NodeConnectionTypes.AiLanguageModel,0)),
-			},
-		});
+		var data = await this.getInputConnectionData(NodeConnectionTypes.AiLanguageModel,0);
 		
 		return {
 			workflowData: [
-				this.helpers.returnJsonArray([{sessionId:chatInput.sessionId,chatInput:chatInput.message}]),
+				this.helpers.returnJsonArray([{sessionId:chatInput.sessionId, chatInput:chatInput.message, data:data as any}]),
 			],		
 			
 		}

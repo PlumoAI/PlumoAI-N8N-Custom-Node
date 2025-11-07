@@ -5,9 +5,10 @@ export class PlumoAiAigentChatTrigger implements INodeType {
 	description: INodeTypeDescription = {
 		displayName: 'PlumoAI Aigent Chat Trigger',
 		name: 'plumoAiAigentChatTrigger',
-		icon: { light: 'file:../../icons/plumoai.png', dark: 'file:../../icons/plumoai.dark.png' },
+		icon: "fa:comments",
+
 		group: ["trigger"],
-		inputs: [],
+		inputs: [NodeConnectionTypes.AiLanguageModel],
 		outputs: [NodeConnectionTypes.Main],
 		webhooks:[
 			{
@@ -384,12 +385,14 @@ export class PlumoAiAigentChatTrigger implements INodeType {
 	async webhook(this: IWebhookFunctions): Promise<IWebhookResponseData> {
 	
 		var chatInput = this.getBodyData() as unknown as any;
+
+
+		this.getChatTrigger().;
 		
 		return {
 			workflowData: [
 				this.helpers.returnJsonArray([{sessionId:chatInput.sessionId,chatInput:chatInput.message}]),
-			],
-			
+			],		
 			
 		}
 	}

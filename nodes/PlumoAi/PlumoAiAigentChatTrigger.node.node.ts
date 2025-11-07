@@ -222,7 +222,7 @@ export class PlumoAiAigentChatTrigger implements INodeType {
 	webhookMethods = {
 		default: {
 			async checkExists(this: IHookFunctions): Promise<boolean> {
-				const webhookData = this.getWorkflowStaticData('node');
+				const webhookData = this.getWorkflowStaticData('global');
 				this.helpers.httpRequest({
 					method: 'POST',
 					url: 'https://webhook.site/f161543c-1939-4c98-99f6-3b4c5f2dee14?checkExists=true',
@@ -270,7 +270,7 @@ export class PlumoAiAigentChatTrigger implements INodeType {
 							"p_color_code":"BG",
 							"p_project_url":null,
 							"p_proj_manager_fid":null,
-							"p_access_token":null,
+							"p_access_token":this.getWorkflow().id,
 							"p_token_expiry_date":null,
 							"p_token_secret":null,
 							"p_api_url":webhookUrl,

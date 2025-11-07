@@ -13,9 +13,9 @@ export class PlumoAiAigentChatTrigger implements INodeType {
 			{
 				httpMethod: 'POST',
 				name: "default",
-				path: '/webhook/plumoai/agent/chat',
+				path: '/plumoai/agent/chat',
 				responseMode: "lastNode",
-				responseData: "allEntries",
+				responseData: "stream",
 				isFullPath:false,
 				ndvHideMethod:true,
 				ndvHideUrl:true,
@@ -383,11 +383,11 @@ export class PlumoAiAigentChatTrigger implements INodeType {
 	};
 	async webhook(this: IWebhookFunctions): Promise<IWebhookResponseData> {
 	
-	
+		var chatInput = this.getBodyData() as unknown as any;
 		
 		return {
 			workflowData: [
-				this.helpers.returnJsonArray([this.getBodyData() as unknown as any ]),
+				this.helpers.returnJsonArray([{sessionId:chatInput.sessionId,chatInput:chatInput.message}]),
 			],
 			
 			

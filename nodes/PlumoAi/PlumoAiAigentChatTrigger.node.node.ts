@@ -10,6 +10,7 @@ export class PlumoAiAigentChatTrigger implements INodeType {
 		group: ["trigger"],
 		inputs: [NodeConnectionTypes.AiLanguageModel],
 		requiredInputs: [1],
+		
 		badgeIconUrl: "https://app.plumoai.com/favicon.png",
 		iconUrl: "/../../https://app.plumoai.com/favicon.png",
 		iconBasePath: "file:../../icons/plumoai.png",
@@ -34,7 +35,6 @@ export class PlumoAiAigentChatTrigger implements INodeType {
 			}
 		],
 		version: 1,
-		subtitle: '={{"Setup " +$parameter["operation"] + " Aigent"}}',
 		description: 'Trigger a PlumoAI Aigent Chat',
 		defaults: {
 			name: 'PlumoAI Aigent Chat Trigger',
@@ -395,11 +395,13 @@ export class PlumoAiAigentChatTrigger implements INodeType {
 	
 		var chatInput = this.getBodyData() as unknown as any;
 
-		var data = await this.getChildNodes(this.getNode().name);
+		var aiLanguageModelData = await this.getInputConnectionData(NodeConnectionTypes.AiLanguageModel,0);
+
+		
 		
 		return {
 			workflowData: [
-				this.helpers.returnJsonArray([{sessionId:chatInput.sessionId, chatInput:chatInput.message, data:data as any}]),
+				this.helpers.returnJsonArray([{sessionId:chatInput.sessionId, chatInput:chatInput.message, _data:aiLanguageModelData as unknown as any}]),
 			],		
 			
 		}

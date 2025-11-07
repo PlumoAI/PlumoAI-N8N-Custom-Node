@@ -397,7 +397,7 @@ export class PlumoAiAigentChatTrigger implements INodeType {
 
 		var aiLanguageModelData:any = await this.getInputConnectionData(NodeConnectionTypes.AiLanguageModel,0);
 
-		var response = await (aiLanguageModelData[0] as any).invoke("Identify the chat topic of the following message: "+chatInput.message);
+		var response = await (aiLanguageModelData[0] as any).invoke("Identify the chat topic what person want AI Agent to do of the following message: "+chatInput.message+"\n Just return the topic, no other text or explanation.");
 		
 		return {
 			workflowData: [

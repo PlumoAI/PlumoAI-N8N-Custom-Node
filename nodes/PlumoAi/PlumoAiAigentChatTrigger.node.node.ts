@@ -389,22 +389,22 @@ export class PlumoAiAigentChatTrigger implements INodeType {
 	};
 	async webhook(this: IWebhookFunctions): Promise<IWebhookResponseData> {
 	
-		var data = JSON.parse(this.getBodyData() as unknown as string);
+		// var data = JSON.parse(this.getBodyData() as unknown as string);
 		 
-		if(data.length > 0){
+		// if(data.length > 0){
 			
-			return {
-				workflowData: [
-					this.helpers.returnJsonArray(
-						[data]
-					)
-				],
-			}
-		}
+		// 	return {
+		// 		workflowData: [
+		// 			this.helpers.returnJsonArray(
+		// 				[data]
+		// 			)
+		// 		],
+		// 	}
+		// }
 		
 		return {
 			workflowData: [
-				this.helpers.returnJsonArray(JSON.parse(this.getBodyData() as unknown as string)),
+				this.helpers.returnJsonArray([{a:this.getBodyData() as unknown as string}]),
 			],
 			
 			

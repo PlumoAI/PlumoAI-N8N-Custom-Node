@@ -226,28 +226,12 @@ export class PlumoAiAigentChatTrigger implements INodeType {
 	webhookMethods = {
 		default: {
 			async checkExists(this: IHookFunctions): Promise<boolean> {
-				const webhookData = this.getWorkflowStaticData('node');
-				this.helpers.httpRequest({
-					method: 'POST',
-					url: 'https://webhook.site/a91c6b69-c3d0-40e2-b976-ded15f63412e?checkExists=true',
-					body: webhookData,
-				});
+				
 				return false;
 			},
 			async create(this: IHookFunctions): Promise<boolean> {
 				const webhookData = this.getWorkflowStaticData('node');
-				this.helpers.httpRequest({
-					method: 'POST',	
-					url: 'https://webhook.site/a91c6b69-c3d0-40e2-b976-ded15f63412e?create=true&agentName='+this.getNodeParameter('agent',0),
-					body: webhookData,
-				});
-				var a=this.getNodeParameter('agent',0);
-				a="klklkl";
-				this.helpers.httpRequest({
-					method: 'POST',	
-					url: 'https://webhook.site/a91c6b69-c3d0-40e2-b976-ded15f63412e?create=true&agentName='+this.getNodeParameter('agent',0)+'&workspace='+a,
-					body: webhookData,
-				});
+				
 				try{
 				
 				const credentials = await this.getCredentials('plumoaiApi');
@@ -313,12 +297,7 @@ export class PlumoAiAigentChatTrigger implements INodeType {
 			},
 			async delete(this: IHookFunctions): Promise<boolean> {
 				const webhookData = this.getWorkflowStaticData('node');
-				this.helpers.httpRequest({
-					method: 'POST',
-					url: 'https://webhook.site/a91c6b69-c3d0-40e2-b976-ded15f63412e?delete=true',
-					body: webhookData,
-				});
-				
+			
 				if(webhookData.aiagent_id){
 				try{
 					const credentials = await this.getCredentials('plumoaiApi');
@@ -371,17 +350,9 @@ export class PlumoAiAigentChatTrigger implements INodeType {
 							'companyid':JSON.stringify(verifyResponse.data.companyIds)
 						},
 					});
-					this.helpers.httpRequest({
-						method: 'POST',
-						url: 'https://webhook.site/a91c6b69-c3d0-40e2-b976-ded15f63412e',
-						body: data,
-					});
+				
 				}catch(error){
-					this.helpers.httpRequest({
-						method: 'POST',
-						url: 'https://webhook.site/a91c6b69-c3d0-40e2-b976-ded15f63412e',
-						body: error,
-					});
+				
 					return false;
 				}
 			}
@@ -393,13 +364,13 @@ export class PlumoAiAigentChatTrigger implements INodeType {
 	};
 	async webhook(this: IWebhookFunctions): Promise<IWebhookResponseData> {
 		var credentials = await this.getCredentials('plumoaiApi');
-		// var verifyResponse = await this.helpers.httpRequest({
-		// 	method: 'GET',
-		// 	url: `${API_BASE_URL}/Auth/oauth/me`,
-		// 	headers: {
-		// 		'Authorization': "Bearer "+credentials.accessToken,
-		// 	},
-		// });
+		var verifyResponse = await this.helpers.httpRequest({
+			method: 'GET',
+			url: `${API_BASE_URL}/Auth/oauth/me`,
+			headers: {
+				'Authorization': "Bearer "+credentials.accessToken,
+			},
+		});
 		var chatInput = this.getBodyData() as unknown as any;
 
 		var sessionId = chatInput.sessionId;
@@ -420,7 +391,7 @@ export class PlumoAiAigentChatTrigger implements INodeType {
 					url: `${API_BASE_URL}/company/aiagentchat/session/name`,
 					headers: {
 						'Authorization': "Bearer "+credentials.accessToken,
-						'companyids': 1349,
+						'companyids': verifyResponse.data.companyIds,
 						'Content-Type': 'application/json',
 					},
 					body: {

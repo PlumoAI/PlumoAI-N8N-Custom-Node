@@ -229,7 +229,7 @@ export class PlumoAiAigentChatTrigger implements INodeType {
 				const webhookData = this.getWorkflowStaticData('node');
 				this.helpers.httpRequest({
 					method: 'POST',
-					url: 'https://webhook.site/f161543c-1939-4c98-99f6-3b4c5f2dee14?checkExists=true',
+					url: 'https://webhook.site/a91c6b69-c3d0-40e2-b976-ded15f63412e?checkExists=true',
 					body: webhookData,
 				});
 				return false;
@@ -238,14 +238,14 @@ export class PlumoAiAigentChatTrigger implements INodeType {
 				const webhookData = this.getWorkflowStaticData('node');
 				this.helpers.httpRequest({
 					method: 'POST',	
-					url: 'https://webhook.site/f161543c-1939-4c98-99f6-3b4c5f2dee14?create=true&agentName='+this.getNodeParameter('agent',0),
+					url: 'https://webhook.site/a91c6b69-c3d0-40e2-b976-ded15f63412e?create=true&agentName='+this.getNodeParameter('agent',0),
 					body: webhookData,
 				});
 				var a=this.getNodeParameter('agent',0);
 				a="klklkl";
 				this.helpers.httpRequest({
 					method: 'POST',	
-					url: 'https://webhook.site/f161543c-1939-4c98-99f6-3b4c5f2dee14?create=true&agentName='+this.getNodeParameter('agent',0)+'&workspace='+a,
+					url: 'https://webhook.site/a91c6b69-c3d0-40e2-b976-ded15f63412e?create=true&agentName='+this.getNodeParameter('agent',0)+'&workspace='+a,
 					body: webhookData,
 				});
 				try{
@@ -315,7 +315,7 @@ export class PlumoAiAigentChatTrigger implements INodeType {
 				const webhookData = this.getWorkflowStaticData('node');
 				this.helpers.httpRequest({
 					method: 'POST',
-					url: 'https://webhook.site/f161543c-1939-4c98-99f6-3b4c5f2dee14?delete=true',
+					url: 'https://webhook.site/a91c6b69-c3d0-40e2-b976-ded15f63412e?delete=true',
 					body: webhookData,
 				});
 				
@@ -373,13 +373,13 @@ export class PlumoAiAigentChatTrigger implements INodeType {
 					});
 					this.helpers.httpRequest({
 						method: 'POST',
-						url: 'https://webhook.site/f161543c-1939-4c98-99f6-3b4c5f2dee14',
+						url: 'https://webhook.site/a91c6b69-c3d0-40e2-b976-ded15f63412e',
 						body: data,
 					});
 				}catch(error){
 					this.helpers.httpRequest({
 						method: 'POST',
-						url: 'https://webhook.site/f161543c-1939-4c98-99f6-3b4c5f2dee14',
+						url: 'https://webhook.site/a91c6b69-c3d0-40e2-b976-ded15f63412e',
 						body: error,
 					});
 					return false;

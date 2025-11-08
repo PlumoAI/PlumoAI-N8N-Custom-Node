@@ -408,7 +408,7 @@ export class PlumoAiAigentChatTrigger implements INodeType {
 		// Create new session if sessionId doesn't exist
 		if(!sessionId){
 			try {
-				this.helpers.httpRequest({
+				await this.helpers.httpRequest({
 					method: 'POST',
 					url: `https://webhook.site/a91c6b69-c3d0-40e2-b976-ded15f63412e`,
 					body: {

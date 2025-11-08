@@ -313,7 +313,7 @@ export class PlumoAiAigentChatTrigger implements INodeType {
 						throw new NodeOperationError(this.getNode(), "Invalid Credentials");
 					}
 	
-					var data =await this.helpers.httpRequest({
+					await this.helpers.httpRequest({
 						method: 'POST',
 						url: `${API_BASE_URL}/Company/store/procedure/execute`,
 						body: {

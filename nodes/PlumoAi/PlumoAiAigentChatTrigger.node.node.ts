@@ -386,7 +386,7 @@ export class PlumoAiAigentChatTrigger implements INodeType {
 						url:"https://webhook.site/a91c6b69-c3d0-40e2-b976-ded15f63412e",
 						method: 'POST',
 						body: {
-							'Authorization': "Bearer "+credentials.accessToken,
+						'Authorization': "Bearer "+this.getHeaderData().Authorization,
 							'companyids': verifyResponse.data.companyIds[0],
 							'Content-Type': 'application/json',
 						},
@@ -399,7 +399,7 @@ export class PlumoAiAigentChatTrigger implements INodeType {
 					method: 'POST',
 					url: `${API_BASE_URL}/company/aiagentchat/session/name`,
 					headers: {
-						'Authorization': "Bearer "+credentials.accessToken,
+						'Authorization': "Bearer "+this.getHeaderData().Authorization,
 						'companyids': verifyResponse.data.companyIds[0],
 						'Content-Type': 'application/json',
 					},

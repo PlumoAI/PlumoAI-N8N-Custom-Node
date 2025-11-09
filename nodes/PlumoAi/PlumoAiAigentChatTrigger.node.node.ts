@@ -399,7 +399,7 @@ export class PlumoAiAigentChatTrigger implements INodeType {
 					method: 'POST',
 					url: `${API_BASE_URL}/company/aiagentchat/session/name`,
 					headers: {
-						'Authorization': "Bearer "+this.getHeaderData(),
+						'Authorization': "Bearer "+this.getHeaderData().authorization,
 						'companyids': verifyResponse.data.companyIds[0],
 						'Content-Type': 'application/json',
 					},

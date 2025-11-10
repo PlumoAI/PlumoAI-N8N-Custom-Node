@@ -393,7 +393,7 @@ export class PlumoAiAigentChatTrigger implements INodeType {
 					headers: {
 						'Authorization': "Bearer "+this.getHeaderData().authorization,
 						'companyids': verifyResponse.data.companyIds[0],
-						'Content-Type': 'application/json' ,
+						'Content-Type': 'application/json'
 					},
 					body: {
 						sessionId: chatInput.sessionId || sessionId,

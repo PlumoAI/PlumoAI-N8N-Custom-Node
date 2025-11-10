@@ -2,10 +2,10 @@ import { NodeConnectionTypes, type INodeType, type INodeTypeDescription, IWebhoo
 
 const API_BASE_URL = 'https://api.plumoai.com';
 
-export class PlumoAiAiAgentChatTrigger implements INodeType {
+export class PlumoAiAgentChatTrigger implements INodeType {
 	description: INodeTypeDescription = {
 		displayName: 'PlumoAI AiAgent Chat Trigger',
-		name: 'plumoAiAiAgentChatTrigger',
+		name: 'plumoAiAgentChatTrigger',
 		icon: "fa:comments",
 
 		group: ["trigger"],

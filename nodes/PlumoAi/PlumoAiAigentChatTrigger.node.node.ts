@@ -2,10 +2,10 @@ import { NodeConnectionTypes, type INodeType, type INodeTypeDescription, IWebhoo
 
 const API_BASE_URL = 'https://api.plumoai.com';
 
-export class PlumoAiAgentChatTrigger implements INodeType {
+export class PlumoAiAigentChatTrigger implements INodeType {
 	description: INodeTypeDescription = {
-		displayName: 'PlumoAI AiAgent Chat Trigger',
-		name: 'plumoAiAgentChatTrigger',
+		displayName: 'PlumoAI Aigent Chat Trigger',
+		name: 'plumoAiAigentChatTrigger',
 		icon: "fa:comments",
 
 		group: ["trigger"],
@@ -35,9 +35,9 @@ export class PlumoAiAgentChatTrigger implements INodeType {
 			}
 		],
 		version: 1,
-		description: 'Trigger a PlumoAI AiAgent Chat',
+		description: 'Trigger a PlumoAI Aigent Chat',
 		defaults: {
-			name: 'PlumoAI AiAgent Chat Trigger',
+			name: 'PlumoAI Aigent Chat Trigger',
 		},
 		usableAsTool: true,
 		credentials: [
@@ -73,11 +73,11 @@ export class PlumoAiAgentChatTrigger implements INodeType {
 				noDataExpression: true,
 				options: [
 					{
-						name: 'Create New AiAgent',
+						name: 'Create New Aigent',
 						value: 'new',
 					},
 					{
-						name: 'Connect With Existing AiAgent',
+						name: 'Connect With Existing Aigent',
 						value: 'connect',
 					},
 				],

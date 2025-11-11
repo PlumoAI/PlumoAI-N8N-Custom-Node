@@ -149,7 +149,8 @@ export class PlumoAiTrigger implements INodeType {
 				},
 				displayOptions: {
 					show: {
-						operation: ["new", "connect"],
+						type: ['aiagent'],
+						event: ["new", "connect"],
 					},
 				},
 				default: '',
@@ -165,7 +166,8 @@ export class PlumoAiTrigger implements INodeType {
 				},
 				displayOptions: {
 					show: {
-						operation: ["connect"],
+						type: ['aiagent'],
+						event: ["connect"],
 					},
 				},
 				default: '',
@@ -180,7 +182,8 @@ export class PlumoAiTrigger implements INodeType {
 				description: 'Enter the name of the Ai Agent to create.',
 				displayOptions: {
 					show: {
-						operation: ["new"],
+						type: ['aiagent'],
+						event: ["new"],
 					},
 				},
 			}

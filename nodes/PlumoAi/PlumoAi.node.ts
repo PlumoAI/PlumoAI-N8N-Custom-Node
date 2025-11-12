@@ -46,7 +46,7 @@ export class PlumoAI implements INodeType {
 		group: ["output"],
 		version: 1,
 		subtitle: '={{$parameter["operation"] + ": " + $parameter["resource"]}}',
-		description: 'Consume PlumoAI API',
+		description: 'Consume PlumoAI API' ,
 		defaults: {
 			name: 'PlumoAI',
 		},

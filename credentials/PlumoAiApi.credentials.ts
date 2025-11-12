@@ -10,7 +10,7 @@ import type {
 export class PlumoAiApi implements ICredentialType {
 	name = 'plumoAiApi';
 
-	displayName = 'PlumoAI Credential';
+	displayName = 'PlumoAi Credential';
 	icon: Icon = 'file:../icons/plumoai.png';
 	documentationUrl = 'https://plumoai.com/docs';
 
@@ -20,7 +20,7 @@ export class PlumoAiApi implements ICredentialType {
 			name: 'accessToken',
 			type: 'string',
 			typeOptions: { password: true },
-			description: 'The access token of your PlumoAI work environment',
+			description: 'The access token of your PlumoAi work environment',
 			placeholder: 'Access Token',
 			default: '',
 		},
@@ -49,7 +49,7 @@ export class PlumoAiApi implements ICredentialType {
 				properties: {
 					key: 'aud',
 					message: 'Success',
-					value: 'PlumoAI.com',
+					value: 'PlumoAi.com',
 				},
 			},
 		],

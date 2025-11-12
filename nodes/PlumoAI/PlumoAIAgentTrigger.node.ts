@@ -214,7 +214,7 @@ export class PlumoAIAgentTrigger implements INodeType {
 				});
 				
 				return response.data.				
-				filter((project: any) => project.location_fid == this.getNodeParameter('workspace', 0) && project.template_proj_type_fid==8).map((project: any) => ({
+				filter((project: any) => project.location_fid == this.getNodeParameter('workspace', 0) && project.template_proj_type_fid==8 && project.project_aiagent_config==null).map((project: any) => ({
 					name: project.project_name,
 					value: project.project_id,
 				}));
@@ -258,7 +258,7 @@ export class PlumoAIAgentTrigger implements INodeType {
 					"parameters":{
 						"p_json":
 						{
-						"p_project_id":webhookData.aiagent_id??0,
+						"p_project_id":isNew?0:webhookData.aiagent_id,
 						"p_template_fid":59,
 						"p_template_category_fid":20,
 						"p_project_name":isNew?this.getNodeParameter('agentName',0):null,

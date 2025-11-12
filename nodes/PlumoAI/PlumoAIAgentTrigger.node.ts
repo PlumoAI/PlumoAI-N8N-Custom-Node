@@ -102,8 +102,10 @@ export class PlumoAIAgentTrigger implements INodeType {
 				name: 'agent',
 				type: 'options',
 				required: true,
+				
 				typeOptions: {
 					loadOptionsMethod: 'getAgents',
+					loadOptionsDependsOn: ['workspace'],
 				},
 				displayOptions: {
 					show: {

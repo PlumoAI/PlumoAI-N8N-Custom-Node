@@ -2,18 +2,16 @@ import { NodeConnectionTypes, type INodeType, type INodeTypeDescription, IWebhoo
 
 const API_BASE_URL = 'https://api.plumoai.com';
 
-export class PlumoAiAigentChatTrigger implements INodeType {
+export class PlumoAiAigentTrigger implements INodeType {
 	description: INodeTypeDescription = {
-		displayName: 'PlumoAI Aigent Chat Trigger',
-		name: 'plumoAiAigentChatTrigger',
-		icon: "fa:comments",
-
+		displayName: 'PlumoAi Agent Trigger',
+		name: 'plumoAiAgentTrigger',
+		icon: "fa:robot",
 		group: ["trigger"],
 		inputs: [NodeConnectionTypes.AiLanguageModel],
-		requiredInputs: [1],
-		
+		requiredInputs: [1],		
 		badgeIconUrl: "https://app.plumoai.com/favicon.png",
-		iconUrl: "/../../https://app.plumoai.com/favicon.png",
+		iconUrl: "https://app.plumoai.com/favicon.png",
 		iconBasePath: "file:../../icons/plumoai.png",
 		inputNames: ["Ai Language Model"],
 		outputNames: ["Ai Agent"],
@@ -35,9 +33,9 @@ export class PlumoAiAigentChatTrigger implements INodeType {
 			}
 		],
 		version: 1,
-		description: 'Trigger a PlumoAI Aigent Chat',
+		description: 'Trigger a PlumoAi Agent',
 		defaults: {
-			name: 'PlumoAI Aigent Chat Trigger',
+			name: 'PlumoAi Agent Trigger',
 		},
 		usableAsTool: true,
 		credentials: [
@@ -136,7 +134,7 @@ export class PlumoAiAigentChatTrigger implements INodeType {
 		loadOptions: {
 			async getWorkspaces(this: ILoadOptionsFunctions) {
 				try{
-				const credentials = await this.getCredentials('plumoaiApi');
+				const credentials = await this.getCredentials('plumoAiApi');
 				const verifyResponse = await this.helpers.httpRequest({
 					method: 'GET',
 					url: `${API_BASE_URL}/Auth/oauth/me`,

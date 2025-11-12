@@ -1,6 +1,5 @@
 import { NodeConnectionTypes, type INodeType, type INodeTypeDescription, IWebhookResponseData, IWebhookFunctions, ILoadOptionsFunctions, NodeOperationError, IHookFunctions } from 'n8n-workflow';
 
-const API_BASE_URL = 'https://api.plumoai.com';
 
 export class PlumoAiAgent implements INodeType {
 	description: INodeTypeDescription = {

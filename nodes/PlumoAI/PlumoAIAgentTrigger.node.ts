@@ -251,6 +251,11 @@ export class PlumoAIAgentTrigger implements INodeType {
 				}
 
 				const webhookUrl = this.getNodeWebhookUrl('default') as string;
+				
+				if(this.getNodeParameter('operation',0)=="connect"){
+					webhookData.aiagent_id = this.getNodeParameter('agent',0);
+				}
+				
 				var isNew = (webhookData.aiagent_id??0)==0?true:false;
 				var projectBody = {
 					"storeProcedureName":"usp_proj_save_project_in_json",

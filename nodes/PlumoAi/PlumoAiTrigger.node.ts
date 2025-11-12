@@ -1,45 +1,15 @@
-import { NodeConnectionTypes, type INodeType, type INodeTypeDescription, IWebhookResponseData, IWebhookFunctions, ILoadOptionsFunctions, NodeOperationError, IHookFunctions } from 'n8n-workflow';
+import type {
+	ILoadOptionsFunctions,
+	INodeType,
+	INodeTypeDescription,
+	IWebhookResponseData,
+	IWebhookFunctions,
+	IHookFunctions
+} from 'n8n-workflow';
+import {  NodeOperationError,NodeConnectionTypes } from 'n8n-workflow';
 
-const API_BASE_URL = 'https://api.plumoai.com';
-
-export class PlumoAiTrigger implements INodeType {
+export class PlumoaiTrigger implements INodeType {
 	description: INodeTypeDescription = {
-		displayName: 'PlumoAi Trigger',
-		name: 'plumoAiTrigger',
-		icon: "fa:comments",
-
-		group: ["trigger"],
-		inputs: [NodeConnectionTypes.AiLanguageModel],
-		requiredInputs: [1],
-		
-		badgeIconUrl: "https://app.plumoai.com/favicon.png",
-		iconUrl: "/../../https://app.plumoai.com/favicon.png",
-		iconBasePath: "file:../../icons/plumoai.png",
-		inputNames: ["Ai Language Model"],
-		outputNames: ["Ai Agent"],
-		mockManualExecution:undefined,
-		maxNodes:1,
-		outputs: [NodeConnectionTypes.Main],
-		webhooks:[
-			{
-				httpMethod: 'POST',
-				name: "default",
-				path: '/plumoai/agent/chat',
-				responseMode: "streaming",
-				responseData: "allEntries",
-				isFullPath:false,
-				ndvHideMethod:true,
-				ndvHideUrl:true,
-				nodeType: "webhook",
-				
-			}
-		],
-		version: 1,
-		description: 'Trigger a PlumoAI Aigent Chat',
-		defaults: {
-			name: 'PlumoAi Trigger',
-		},
-		usableAsTool: true,
 		credentials: [
 			{
 				name: 'plumoaiApi',
@@ -49,10 +19,27 @@ export class PlumoAiTrigger implements INodeType {
 						authentication: ['apiToken' ],
 					},
 				},
-			}
-			
+			},
 		],
-		
+		displayName: 'PlumoAI Trigger',
+		defaults: {
+			name: 'PlumoAI Trigger',
+		},
+		description: 'Starts the workflow when PlumoAI events occur',
+		group: ['trigger'],
+		icon: 'file:plumoai.png',
+		inputs: [],
+		// keep sendinblue name for backward compatibility
+		name: 'plumoaiTrigger',
+		outputs: [NodeConnectionTypes.Main],
+		version: 1,
+		webhooks: [
+			{
+				name: 'default',
+				httpMethod: 'POST',
+				path: 'plumoai',
+			},
+		],
 		properties: [
 			{
 				displayName: 'Authentication',
@@ -68,30 +55,20 @@ export class PlumoAiTrigger implements INodeType {
 			},
 			{
 				displayName: 'Resource',
+				default: 'transactional',
 				name: 'type',
-				type: 'options',
-				noDataExpression: true,
 				options: [
-					{
-						name: 'Records',
-						value: 'record',
-					},
-					{
-						name: 'Ai Agents',
-						value: 'aiagent',
-					},
+					{ name: 'Inbound', value: 'inbound' },
+					{ name: 'Marketing', value: 'marketing' },
+					{ name: 'Transactional', value: 'transactional' },
 				],
-				default: 'record',
+				required: true,
+				type: 'options',
 			},			
 			{
 				displayName: 'Trigger On',
 				name: 'event',
 				type: 'options',
-				displayOptions:{
-					show: {
-						type: ['record'],
-					},
-				},
 				options: [
 				
 					{
@@ -118,87 +95,50 @@ export class PlumoAiTrigger implements INodeType {
 				default: [],
 			},			
 			{
-				displayName: 'Operation',
-				name: 'event',
-				type: 'options',
-				noDataExpression: true,
-				displayOptions: {
-					show: {
-						type: ['aiagent'],
-					},
-				},
-				options: [
-					{
-						name: 'Create New Ai Agent',
-						value: 'new',
-					},
-					{
-						name: 'Connect With Existing Ai Agent',
-						value: 'connect',
-					},
-				],
-				default: 'new',
-			},
-			{
-				displayName: 'Workspace',
-				name: 'workspace',
+				displayName: 'Project',
+				name: 'project',
 				type: 'options',
 				required: true,
 				typeOptions: {
-					loadOptionsMethod: 'getWorkspaces',
+					loadOptionsMethod: 'getProjects',
 				},
 				displayOptions: {
-					show: {
-						type: ['aiagent'],
-						event: ["new", "connect"],
+					hide: {
+						event: ["*"],
 					},
 				},
 				default: '',
-				description: 'Select a workspace from the API. Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>.',
-			},
+				description: 'Select a project from the API. Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>.',
+			},			
 			{
-				displayName: 'Ai Agent',
-				name: 'agent',
+				displayName: 'Table',
+				name: 'table',
 				type: 'options',
 				required: true,
 				typeOptions: {
-					loadOptionsMethod: 'getAgents',
+					loadOptionsMethod: 'getProjectTables',
+					loadOptionsDependsOn: ['project'], // ✅ ensures reload when project changes
 				},
 				displayOptions: {
-					show: {
-						type: ['aiagent'],
-						event: ["connect"],
-					},
+					hide: {
+						project: ["*"],
+					},					
 				},
 				default: '',
-				description: 'Select an Ai Agent from the API. Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>.',
-			},
-			{
-				displayName: 'Ai Agent Name',
-				name: 'agentName',
-				type: 'string',
-				required: true,
-				default: '',
-				description: 'Enter the name of the Ai Agent to create.',
-				displayOptions: {
-					show: {
-						type: ['aiagent'],
-						event: ["new"],
-					},
-				},
+				description: 'Select a table from the API. Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>.',
 			}
-			
-		],
-	};
 
+		],
+		
+	};
 	methods = {
 		loadOptions: {
-			async getWorkspaces(this: ILoadOptionsFunctions) {
+			async getProjects(this: ILoadOptionsFunctions) {
 				try{
 				const credentials = await this.getCredentials('plumoaiApi');
 				const verifyResponse = await this.helpers.httpRequest({
 					method: 'GET',
-					url: `${API_BASE_URL}/Auth/oauth/me`,
+					url: 'https://api.plumoai.com/Auth/oauth/me',
 					headers: {
 						'Authorization': "Bearer "+credentials.accessToken,
 					},
@@ -212,55 +152,14 @@ export class PlumoAiTrigger implements INodeType {
 				
 				const response = await this.helpers.httpRequest({
 					method: 'POST',
-					url: `${API_BASE_URL}/company/store/procedure/execute`,
-					body: {
-						"storeProcedureName":"GetClientAndLocation",
-						"parameters":{
-							"userid":verifyResponse.data.userId,
-							"companyid":verifyResponse.data.companyIds[0]
-						}
-					},
-					headers: {
-						'Authorization': "Bearer "+credentials.accessToken,
-						'companyid':JSON.stringify(verifyResponse.data.companyIds)
-					},
-				});
-				return response.data.filter((workspace: any) => workspace.is_aiagent==1).map((workspace: any) => ({
-					name: workspace.Name?.split("§§")?.pop()??"",
-					value: workspace.LocationID,
-				}));
-			}catch(error){
-				
-				return [{name:error,value:"Error Node"}];
-			}
-			},
-			async getAgents(this: ILoadOptionsFunctions) {
-				try{
-				const credentials = await this.getCredentials('plumoaiApi');
-				const verifyResponse = await this.helpers.httpRequest({
-					method: 'GET',
-					url: `${API_BASE_URL}/Auth/oauth/me`,
-					headers: {
-						'Authorization': "Bearer "+credentials.accessToken,
-					},
-				});
-
-				if(!verifyResponse.data){
-					throw new NodeOperationError(this.getNode(), "Invalid Credentials");
-				}
-
-
-				
-				const response = await this.helpers.httpRequest({
-					method: 'POST',
-					url: `${API_BASE_URL}/company/store/procedure/execute`,
+					url: 'https://api.plumoai.com/company/store/procedure/execute',
 					body: {
 							"storeProcedureName":"usp_proj_get_project",
 							"parameters":{	
 								"p_project_id":0,
 								"p_LoggedInUser":verifyResponse.data.userId,
 								"p_CompanyID":verifyResponse.data.companyIds[0],
-								"p_Location_fid":this.getNodeParameter('workspace', 0),
+								"p_Location_fid":-1,
 								"p_proj_status":"P",
 								"p_PageNumber":1,
 								"p_RowsOfPage":1000
@@ -280,7 +179,43 @@ export class PlumoAiTrigger implements INodeType {
 				return [{name:error,value:"Error Node"}];
 			}
 			},
-		}
+			async getProjectTables(this: ILoadOptionsFunctions) {
+				
+				const credentials = await this.getCredentials('plumoaiApi');
+				const verifyResponse = await this.helpers.httpRequest({
+					method: 'GET',
+					url: 'https://api.plumoai.com/Auth/oauth/me',
+					headers: {
+						'Authorization': "Bearer "+credentials.accessToken,
+					},
+				});
+
+				if(!verifyResponse.data){
+					throw new NodeOperationError(this.getNode(), "Invalid Credentials");
+				}
+
+				const response = await this.helpers.httpRequest({
+					method: 'POST',
+					url: 'https://api.plumoai.com/company/store/procedure/execute',
+					body: {
+							"storeProcedureName":"usp_proj_get_projectworkflow",
+							"parameters":{	
+								"p_project_id":this.getNodeParameter('project',0),
+							}
+						},
+					headers: {
+						'Authorization': "Bearer "+credentials.accessToken,
+						'companyid':JSON.stringify(verifyResponse.data.companyIds)
+					},
+				});
+				return response.data.map((table: any) => ({
+					name: table.workitem_type,
+					value: table.proj_workitem_type_fid,
+				}));
+			
+			}
+			
+		},
 	};
 	webhookMethods = {
 		default: {
@@ -291,187 +226,143 @@ export class PlumoAiTrigger implements INodeType {
 			async create(this: IHookFunctions): Promise<boolean> {
 				const webhookData = this.getWorkflowStaticData('node');
 				
-				try{
-				
-				const credentials = await this.getCredentials('plumoaiApi');
-				const verifyResponse = await this.helpers.httpRequest({
-					method: 'GET',
-					url: `${API_BASE_URL}/Auth/oauth/me`,
-					headers: {
-						'Authorization': "Bearer "+credentials.accessToken,
-					},
-				});
-
-				if(!verifyResponse.data){
+				const {credentials,verifyResponse } = await getCredentialsAndVerify.call(this);		
+				if(!verifyResponse.data || !credentials.accessToken){
 					throw new NodeOperationError(this.getNode(), "Invalid Credentials");
 				}
 
 				const webhookUrl = this.getNodeWebhookUrl('default') as string;
 
-				var aiAgent = await this.helpers.httpRequest({
+				var triggers = await this.helpers.httpRequest({
 					method: 'POST',
-					url: `${API_BASE_URL}/Company/store/procedure/execute`,
+					url: 'https://api.plumoai.com/Auth/store/procedure/execute',
 					body: {
-						"storeProcedureName":"usp_proj_save_project_flutter",
-						"parameters":{
-							"p_project_id":webhookData.aiagent_id??0,
-							"p_template_fid":59,
-							"p_template_category_fid":20,
-							"p_project_name":this.getNodeParameter('agentName',0),
-							"p_description":"",
-							"p_location_fid":this.getNodeParameter("workspace",0),
-							"p_key_code":"",
-							"p_color_code":"BG",
-							"p_project_url":null,
-							"p_proj_manager_fid":null,
-							"p_access_token":this.getWorkflow().id,
-							"p_token_expiry_date":null,
-							"p_token_secret":null,
-							"p_api_url":webhookUrl,
-							"p_email":null,
-							"p_userid":verifyResponse.data.userId,
-							"p_project_seq_order":1,
-							"p_isactive":1,
-							"p_Project_Status":"P",
-							"p_Update_Users":0,
-							"p_ProjectMgr":"",
-							"p_ProjectMem":"","p_ProjectGuest":"","p_ProjectTeam_Mem":"","p_ProjectTeam_Guest":"",
-							"p_TaskTimerAutoOn":0,
-							"p_IsTrackLocation":0
-						}
+						"storeProcedureName":"usp_proj_def_automation_when_get",
+						"parameters":{}
 					},
 					headers: {
-						'Authorization': "Bearer "+credentials.accessToken,
-						'companyid':JSON.stringify(verifyResponse.data.companyIds)
+						'Authorization': "Bearer "+credentials.accessToken
 					},
 				});
-				
-				webhookData.aiagent_id = aiAgent.data[0].new_Project_Id;
+				var actions = await this.helpers.httpRequest({
+					method: 'POST',
+					url: 'https://api.plumoai.com/Auth/store/procedure/execute',
+					body: {
+						"storeProcedureName":"usp_proj_def_automation_then_get",
+						"parameters":{}
+					},
+					headers: {
+						'Authorization': "Bearer "+credentials.accessToken
+					},
+				});
 
-			}catch(error){
-				return false;
-			}
+				var selectedTrigger = triggers.data.find((trigger: any) => trigger.when_type_code === this.getNodeParameter('event',0));
+				var selectedAction = actions.data.find((action: any) => action.then_type_code === "n8n_wk");
+
+				var workflowAutomation = {
+					"automation":{
+						"automation_id":webhookData.automation_id??"0",
+						"automation_name":`N8N Automation - ${this.getNode().name}`,
+						"automation_on":1,
+						"project_id":this.getNodeParameter('project',0),
+						"modified_by":verifyResponse.data.userId,
+						"whens":[
+							{"automation_fid":webhookData.automation_id??"0","automation_when_id":"0","when_type_fid":selectedTrigger.when_type_id,"action":"i","is_active":1,"modified_by":verifyResponse.data.userId,"isOpen":false,"proj_workitem_type_fid":this.getNodeParameter('table',0),"conditions":[]}
+						],
+						"thens":[
+							{"automation_fid":webhookData.automation_id??"0","automation_then_id":"0","project_id":this.getNodeParameter('project',0),"proj_workitem_type_fid":this.getNodeParameter('table',0),"then_seq_no":0,"then_type_fid":selectedAction.then_type_id,"is_active":1,"action":"i","modified_by":verifyResponse.data.userId,"then_action":{"n8n_url":webhookUrl,"n8n_method":"POST","n8n_body":{}}}
+						]						
+					},"companyId":verifyResponse.data.companyIds[0]
+				};
+
+				var response = await this.helpers.httpRequest({
+					method: 'POST',
+					url: 'https://api.plumoai.com/company/automation/save',
+					body: workflowAutomation,
+					headers: {
+						'Authorization': "Bearer "+credentials.accessToken
+					},
+				});
+				webhookData.automation_id = response.data[0].p_automation_id;
+
+
 				
 				return true;
 			},
 			async delete(this: IHookFunctions): Promise<boolean> {
 				const webhookData = this.getWorkflowStaticData('node');
-			
-				if(webhookData.aiagent_id){
-				try{
-					const credentials = await this.getCredentials('plumoaiApi');
-					const verifyResponse = await this.helpers.httpRequest({
-						method: 'GET',
-						url: `${API_BASE_URL}/Auth/oauth/me`,
-						headers: {
-							'Authorization': "Bearer "+credentials.accessToken,
-						},
-					});
-	
-					if(!verifyResponse.data){
+				
+				if(webhookData.automation_id){
+					const {credentials,verifyResponse } = await getCredentialsAndVerify.call(this);		
+					if(!verifyResponse.data || !credentials.accessToken){
 						throw new NodeOperationError(this.getNode(), "Invalid Credentials");
 					}
-	
 					await this.helpers.httpRequest({
 						method: 'POST',
-						url: `${API_BASE_URL}/Company/store/procedure/execute`,
+						url: 'https://api.plumoai.com/company/store/procedure/execute',
 						body: {
-							"storeProcedureName":"usp_proj_save_project_flutter",
-							"parameters":{
-								"p_project_id":webhookData.aiagent_id??0,
-								"p_template_fid":59,
-								"p_template_category_fid":20,
-								"p_project_name":this.getNodeParameter('agentName',0),
-								"p_description":"",
-								"p_location_fid":this.getNodeParameter("workspace",0),
-								"p_key_code":"",
-								"p_color_code":"BG",
-								"p_project_url":null,
-								"p_proj_manager_fid":null,
-								"p_access_token":null,
-								"p_token_expiry_date":null,
-								"p_token_secret":null,
-								"p_api_url":null,
-								"p_email":null,
-								"p_userid":verifyResponse.data.userId,
-								"p_project_seq_order":1,
-								"p_isactive":0,
-								"p_Project_Status":"P",
-								"p_Update_Users":0,
-								"p_ProjectMgr":"",
-								"p_ProjectMem":"","p_ProjectGuest":"","p_ProjectTeam_Mem":"","p_ProjectTeam_Guest":"",
-								"p_TaskTimerAutoOn":0,
-								"p_IsTrackLocation":0
-							}
-						},
+								"storeProcedureName":"usp_proj_delete_automation",
+								"parameters":{	
+									"p_automation_id":webhookData.automation_id
+								}
+							},
 						headers: {
 							'Authorization': "Bearer "+credentials.accessToken,
 							'companyid':JSON.stringify(verifyResponse.data.companyIds)
 						},
 					});
-				
-				}catch(error){
-				
-					return false;
+					
+					delete webhookData.automation_id;
+					return true;
 				}
-			}
 				return true;
-			}
+
 			}
 			
-		
+		},
 	};
 	async webhook(this: IWebhookFunctions): Promise<IWebhookResponseData> {
-		var credentials = await this.getCredentials('plumoaiApi');
-		var verifyResponse = await this.helpers.httpRequest({
-			method: 'GET',
-			url: `${API_BASE_URL}/Auth/oauth/me`,
-			headers: {
-				'Authorization': "Bearer "+credentials.accessToken,
-			},
-		});
-		var chatInput = this.getBodyData() as unknown as any;
-
-		var sessionId = chatInput.sessionId;
-		var sessionName: string | undefined;
-		
-		var queryData = this.getQueryData() as any;
-		
-		// Check if queryData contains update chat name request
-		if (queryData && (queryData.updateChatName || 
-			Object.keys(queryData).some(key => key.toLowerCase().includes('update') && key.toLowerCase().includes('chat') && key.toLowerCase().includes('name')))) {
-			try {
-					
-					var aiLanguageModelData:any = await this.getInputConnectionData(NodeConnectionTypes.AiLanguageModel,0);
-					var chatName = await (aiLanguageModelData[0] as any).invoke("Identify the chat topic what person want AI Agent to do of the following message: "+chatInput.message+"\n Just return the topic, no other text or explanation.");
-		
-				
-					await this.helpers.httpRequest({
-					method: 'POST',
-					url: `${API_BASE_URL}/company/aiagentchat/session/name`,
-					headers: {
-						'Authorization': "Bearer "+this.getHeaderData().authorization,
-						'companyids': verifyResponse.data.companyIds[0],
-						'Content-Type': 'application/json'
-					},
-					body: {
-						sessionId: chatInput.sessionId || sessionId,
-						sessionName: (chatName as unknown as any).content.trim()
-					},
-				});				
-			} catch(error) {
-				throw new NodeOperationError(this.getNode(), `Failed to update chat name: ${error}`);
+	
+		var data = JSON.parse(this.getBodyData() as unknown as string);
+		 
+		if(data.length > 0){
+			var record = data[0].find((x:any) => x);
+			var recordCustomFields = data[1];
+			var completeRecord = {
+				...record
+			} as any;
+			for(var customField of recordCustomFields){
+				completeRecord[customField.field_name] = customField.field_value??customField.field_value_text??customField.field_json_value;
+			}
+			return {
+				workflowData: [
+					this.helpers.returnJsonArray(
+						[completeRecord]
+					)
+				],
 			}
 		}
 		
-		
-		
 		return {
 			workflowData: [
-				this.helpers.returnJsonArray([{sessionId:sessionId, sessionName:sessionName, chatInput:chatInput.message}]),
-			],	
+				this.helpers.returnJsonArray(JSON.parse(this.getBodyData() as unknown as string)),
+			],
 			
 			
 		}
 	}
+	
+
+	
 }
+async function getCredentialsAndVerify (this: IHookFunctions) {
+	const credentials = await this.getCredentials('plumoaiApi');
+	const verifyResponse = await this.helpers.httpRequest({
+		method: 'GET',
+		url: 'https://api.plumoai.com/Auth/oauth/me',
+		headers: {
+			'Authorization': "Bearer "+credentials.accessToken,
+		},
+	});
+	return { credentials, verifyResponse };
+}	

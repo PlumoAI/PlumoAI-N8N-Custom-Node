@@ -34,7 +34,8 @@
 			"dist/credentials/PlumoAiApi.credentials.js"
 		],
 		"nodes": [
-			"dist/nodes/PlumoAi/PlumoAiAigentChatTrigger.node.js"
+			"dist/nodes/PlumoAi/PlumoAiTrigger.node.js",
+			"dist/nodes/PlumoAi/PlumoAi.node.js"
 		]
 	},
 	"devDependencies": {

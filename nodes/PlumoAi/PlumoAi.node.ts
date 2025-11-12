@@ -38,10 +38,10 @@ export const uploadAttachmentField: INodeProperties[] = [
 		
 	},
 ];
-export class Plumoai implements INodeType {
+export class PlumoAi implements INodeType {
 	description: INodeTypeDescription = {
 		displayName: 'PlumoAi',
-		name: 'plumoai',
+		name: 'plumoAi',
 		icon: 'file:../icons/plumoai.png',
 		group: ['transform'],
 		version: 1,

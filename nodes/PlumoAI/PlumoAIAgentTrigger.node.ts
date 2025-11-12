@@ -37,6 +37,15 @@ export class PlumoAIAgentTrigger implements INodeType {
 		usableAsTool: true,
 		credentials: [
 			{
+				name: 'plumoaiApi',
+				required: true,
+				displayOptions: {
+					show: {
+						authentication: ['apiToken' ],
+					},
+				},
+			},
+			{
 				name: 'PlumoAIAPI',
 				required: true,
 				displayOptions: {
@@ -60,6 +69,47 @@ export class PlumoAIAgentTrigger implements INodeType {
 				],
 				default: 'apiToken',
 			},
+			{
+				displayName: 'Authentication',
+				name: 'authentication',
+				type: 'options',
+				options: [
+					{
+						name: 'API Token',
+						value: 'apiToken',
+					}
+				],
+				default: 'apiToken',
+			},		
+			{
+				displayName: 'Trigger On',
+				name: 'event',
+				type: 'options',
+				options: [
+				
+					{
+						name: 'Record Added', 
+						value: 'vt_rc',
+						action: 'Record Added', 
+						description: 'This will trigger the node when a record is added.',
+						
+					},
+					{
+						name: 'Record Updated',
+						value: 'vt_ru',
+						action: 'Record Updated',
+						description: 'This will trigger the node when a record is updated.',
+					},
+					{
+						name: 'Record Added or Updated',
+						value: 'vt_rmc' ,
+						action: 'Record Added or Updated',
+						description: 'This will trigger the node when a record is added or updated.',
+						
+					}
+				],
+				default: [] ,
+			},	
 			{
 				displayName: 'Operation',
 				name: 'operation',

@@ -251,9 +251,10 @@ export class PlumoAIAgentTrigger implements INodeType {
 				}
 
 				const webhookUrl = this.getNodeWebhookUrl('default') as string;
-				
+				var agentName = this.getNodeParameter('agentName',0);
 				if(this.getNodeParameter('operation',0)=="connect"){
 					webhookData.aiagent_id = this.getNodeParameter('agent',0);
+					agentName = this.getWorkflow().name;
 				}
 				
 				var isNew = (webhookData.aiagent_id??0)==0?true:false;
@@ -266,7 +267,7 @@ export class PlumoAIAgentTrigger implements INodeType {
 						"p_project_id":isNew?0:webhookData.aiagent_id,
 						"p_template_fid":59,
 						"p_template_category_fid":20,
-						"p_project_name":this.getNodeParameter('agentName',0),
+						"p_project_name":agentName,
 						"p_description":"",
 						"p_location_fid":this.getNodeParameter("workspace",0),
 						"p_userid":verifyResponse.data.userId,

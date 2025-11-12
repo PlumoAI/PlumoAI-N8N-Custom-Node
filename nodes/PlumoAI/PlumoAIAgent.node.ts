@@ -26,17 +26,7 @@ export class PlumoAIAgent implements INodeType {
 		
 		properties: [
 			
-			{
-				displayName: 'Operation',
-				name: 'operation',
-				type: 'options',
-				noDataExpression: true,
-				options: [
-					
-				],
-				default: [],
-			},
-			
+		
 			
 		],
 	};

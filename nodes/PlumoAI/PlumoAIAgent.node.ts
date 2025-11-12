@@ -33,7 +33,18 @@ export class PlumoAIAgent implements INodeType {
 		],
 		
 		properties: [
-			
+			{
+				displayName: 'Authentication',
+				name: 'authentication',
+				type: 'options',
+				options: [
+					{
+						name: 'API Token',
+						value: 'apiToken',
+					}
+				],
+				default: 'apiToken',
+			},
 		
 			
 		],

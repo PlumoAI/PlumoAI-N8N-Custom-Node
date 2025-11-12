@@ -79,7 +79,7 @@ export class PlumoAiAgentTrigger implements INodeType {
 						value: 'connect',
 					},
 				],
-				default: 'new',
+				default: [],
 			},
 			{
 				displayName: 'Workspace',

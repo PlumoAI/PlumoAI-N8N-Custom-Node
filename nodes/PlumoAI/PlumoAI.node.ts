@@ -55,7 +55,7 @@ export class PlumoAI implements INodeType {
 		outputs: [NodeConnectionTypes.Main],
 		credentials: [
 			{
-				name: 'plumoAIAPI',
+				name: 'PlumoAIAPI',
 				required: true,
 				displayOptions: {
 					show: {
@@ -260,7 +260,7 @@ export class PlumoAI implements INodeType {
 			
 			async getProjects(this: ILoadOptionsFunctions) {
 				try{
-				const credentials = await this.getCredentials('plumoaiApi');
+				const credentials = await this.getCredentials('PlumoAIAPI');
 				const verifyResponse = await this.helpers.httpRequest({
 					method: 'GET',
 					url: 'https://api.plumoai.com/Auth/oauth/me',
@@ -306,7 +306,7 @@ export class PlumoAI implements INodeType {
 			},
 			async getProjectTables(this: ILoadOptionsFunctions) {
 				
-				const credentials = await this.getCredentials('plumoaiApi');
+				const credentials = await this.getCredentials('PlumoAIAPI');
 				const verifyResponse = await this.helpers.httpRequest({
 					method: 'GET',
 					url: 'https://api.plumoai.com/Auth/oauth/me',
@@ -329,7 +329,7 @@ export class PlumoAI implements INodeType {
 			},
 			async getProjectTableStatus(this: ILoadOptionsFunctions) {
 				
-				const credentials = await this.getCredentials('plumoaiApi');
+				const credentials = await this.getCredentials('PlumoAIAPI');
 				const verifyResponse = await this.helpers.httpRequest({
 					method: 'GET',
 					url: 'https://api.plumoai.com/Auth/oauth/me',
@@ -387,7 +387,7 @@ export class PlumoAI implements INodeType {
 			},
 			async getRecordFields(this: ILoadOptionsFunctions) {
 				try{
-				const credentials = await this.getCredentials('plumoaiApi');
+				const credentials = await this.getCredentials('PlumoAIAPI');
 				const verifyResponse = await this.helpers.httpRequest({
 					method: 'GET',
 					url: 'https://api.plumoai.com/Auth/oauth/me',
@@ -420,7 +420,7 @@ export class PlumoAI implements INodeType {
 			async getRecordFieldsMapper(this: ILoadOptionsFunctions) {
 				
 				try{
-				const credentials = await this.getCredentials('plumoaiApi');
+				const credentials = await this.getCredentials('PlumoAIAPI');
 				const verifyResponse = await this.helpers.httpRequest({
 					method: 'GET',
 					url: 'https://api.plumoai.com/Auth/oauth/me',
@@ -530,7 +530,7 @@ export class PlumoAI implements INodeType {
 
 	async execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
 		try{
-		const credentials = await this.getCredentials('plumoaiApi');
+		const credentials = await this.getCredentials('PlumoAIAPI');
 				const verifyResponse = await this.helpers.httpRequest({
 					method: 'GET',
 					url: 'https://api.plumoai.com/Auth/oauth/me',
@@ -840,7 +840,7 @@ async function getRecordFields(this: ILoadOptionsFunctions | IExecuteFunctions, 
 	});
 }
 // async function getCredentialsAndVerify (this: IHookFunctions) {
-// 	const credentials = await this.getCredentials('plumoaiApi');
+// 	const credentials = await this.getCredentials('PlumoAIAPI');
 // 	const verifyResponse = await this.helpers.httpRequest({
 // 		method: 'GET',
 // 		url: 'https://api.plumoai.com/Auth/oauth/me',

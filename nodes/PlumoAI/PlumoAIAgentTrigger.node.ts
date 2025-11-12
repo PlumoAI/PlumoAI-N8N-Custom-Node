@@ -249,7 +249,7 @@ export class PlumoAIAgentTrigger implements INodeType {
 				var isNew = (webhookData.aiagent_id??0)==0?true:false;
 				var projectBody = {
 					"storeProcedureName":"usp_proj_save_project_in_json",
-					"version":2,
+					"version":3,
 					"parameters":{
 						"p_json":
 						{

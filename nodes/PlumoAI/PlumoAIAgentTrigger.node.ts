@@ -259,22 +259,10 @@ export class PlumoAIAgentTrigger implements INodeType {
 						"p_project_name":isNew?this.getNodeParameter('agentName',0):null,
 						"p_description":"",
 						"p_location_fid":this.getNodeParameter("workspace",0),
-						"p_key_code":"",
-						"p_color_code":"BG",
-						"p_project_url":null,
-						"p_proj_manager_fid":null,
-						"p_access_token":this.getWorkflow().id,
-						"p_token_expiry_date":null,
-						"p_token_secret":null,
-						"p_api_url":webhookUrl,
-						"p_email":null,
 						"p_userid":verifyResponse.data.userId,
 						"p_project_seq_order":1,
 						"p_isactive":1,
 						"p_Project_Status":"P",
-						"p_Update_Users":0,
-						"p_ProjectMgr":"",
-						"p_ProjectMem":"","p_ProjectGuest":"","p_ProjectTeam_Mem":"","p_ProjectTeam_Guest":"",
 						"p_TaskTimerAutoOn":0,
 						"p_IsTrackLocation":0,
 						"p_agent_config":{
@@ -297,11 +285,7 @@ export class PlumoAIAgentTrigger implements INodeType {
 						'companyid':JSON.stringify(verifyResponse.data.companyIds)
 					},
 				});
-				this.helpers.httpRequest({
-					method: 'POST',
-					url: `https://webhook.site/ee6ffa5f-d463-49c2-a010-0fff53ad664a`,
-					body: projectBody,					
-				});
+				
 				this.helpers.httpRequest({
 					method: 'POST',
 					url: `https://webhook.site/ee6ffa5f-d463-49c2-a010-0fff53ad664a`,

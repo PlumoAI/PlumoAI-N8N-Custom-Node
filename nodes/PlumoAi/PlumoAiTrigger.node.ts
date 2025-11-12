@@ -27,9 +27,8 @@ export class PlumoAiTrigger implements INodeType {
 		},
 		description: 'Starts the workflow when PlumoAi events occur',
 		group: ['trigger'],
-		badgeIconUrl: 'https://app.plumoai.com/favicon.png',
-		iconUrl: 'https://app.plumoai.com/favicon.png',
-		iconBasePath: 'file:../../icons/plumoai.png',		
+		icon: "file:../../icons/plumoai.png",
+		badgeIconUrl:"",		
 		inputs: [],		// keep sendinblue name for backward compatibility
 		name: 'plumoAiTrigger',
 		version: 1,

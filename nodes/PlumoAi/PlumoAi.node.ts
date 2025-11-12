@@ -42,8 +42,7 @@ export class PlumoAi implements INodeType {
 	description: INodeTypeDescription = {
 		displayName: 'PlumoAi',
 		name: 'plumoAi',
-		icon: "fa:hexagon-nodes",
-		iconUrl: "https://app.plumoai.com/favicon.png",
+		icon: "file:../../icons/plumoai.png",
 		group: ["output"],
 		version: 1,
 		subtitle: '={{$parameter["operation"] + ": " + $parameter["resource"]}}',

@@ -201,7 +201,7 @@ export class PlumoAIAgentTrigger implements INodeType {
 								"p_project_id":0,
 								"p_LoggedInUser":verifyResponse.data.userId,
 								"p_CompanyID":verifyResponse.data.companyIds[0],
-								"p_Location_fid":this.getNodeParameter('workspace', 0),
+								"p_Location_fid":this.getNodeParameter('workspace', 0)??-1,
 								"p_proj_status":"P",
 								"p_PageNumber":1,
 								"p_RowsOfPage":1000

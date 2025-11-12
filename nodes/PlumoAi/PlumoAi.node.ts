@@ -38,24 +38,24 @@ export const uploadAttachmentField: INodeProperties[] = [
 		
 	},
 ];
-export class PlumoAi implements INodeType {
+export class PlumoAI implements INodeType {
 	description: INodeTypeDescription = {
-		displayName: 'PlumoAi',
-		name: 'plumoAi',
+		displayName: 'PlumoAI',
+		name: 'plumoAI',
 		icon: "file:../../icons/plumoai.png",
 		group: ["output"],
 		version: 1,
 		subtitle: '={{$parameter["operation"] + ": " + $parameter["resource"]}}',
-		description: 'Consume PlumoAi API',
+		description: 'Consume PlumoAI API',
 		defaults: {
-			name: 'PlumoAi',
+			name: 'PlumoAI',
 		},
 		usableAsTool: true,
 		inputs: [NodeConnectionTypes.Main],
 		outputs: [NodeConnectionTypes.Main],
 		credentials: [
 			{
-				name: 'plumoAiApi',
+				name: 'plumoAIAPI',
 				required: true,
 				displayOptions: {
 					show: {

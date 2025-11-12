@@ -1,10 +1,10 @@
 import { NodeConnectionTypes, type INodeType, type INodeTypeDescription } from 'n8n-workflow';
 
 
-export class PlumoAiAgent implements INodeType {
+export class PlumoAIAgent implements INodeType {
 	description: INodeTypeDescription = {
-		displayName: 'PlumoAi Agent',
-		name: 'plumoAiAgent',
+		displayName: 'PlumoAI Agent',
+		name: 'plumoAIAgent',
 		icon: "file:../../icons/plumoai.png",
 		group: ["output"],
 		inputs: [NodeConnectionTypes.AiLanguageModel],
@@ -15,9 +15,9 @@ export class PlumoAiAgent implements INodeType {
 		maxNodes:1,
 		outputs: [NodeConnectionTypes.Main],
 		version: 1,
-		description: 'Consume PlumoAi Agent API',
+		description: 'Consume PlumoAI Agent API',
 		defaults: {
-			name: 'PlumoAi Agent',
+			name: 'PlumoAI Agent',
 		},
 		usableAsTool: true,
 		credentials: [

@@ -8,11 +8,11 @@ import type {
 } from 'n8n-workflow';
 import {  NodeOperationError,NodeConnectionTypes } from 'n8n-workflow';
 
-export class PlumoAiTrigger implements INodeType {
+export class PlumoAITrigger implements INodeType {
 	description: INodeTypeDescription = {
 		credentials: [
 			{
-				name: 'plumoAiApi',
+				name: 'plumoAIAPI',
 				required: true,
 				displayOptions: {
 					show: {
@@ -21,15 +21,15 @@ export class PlumoAiTrigger implements INodeType {
 				},
 			},
 		],
-		displayName: 'PlumoAi Trigger',
+		displayName: 'PlumoAI Trigger',
 		defaults: {
-			name: 'PlumoAi Trigger',
+			name: 'PlumoAI Trigger',
 		},
-		description: 'Starts the workflow when PlumoAi events occur',
+		description: 'Starts the workflow when PlumoAI events occur',
 		group: ['trigger'],
 		icon: "file:../../icons/plumoai.png",
 		inputs: [],		// keep sendinblue name for backward compatibility
-		name: 'plumoAiTrigger',
+		name: 'plumoAITrigger',
 		version: 1,
 		outputs: [NodeConnectionTypes.Main],
 		webhooks: [

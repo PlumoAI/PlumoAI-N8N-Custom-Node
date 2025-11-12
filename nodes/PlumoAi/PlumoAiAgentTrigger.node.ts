@@ -2,10 +2,10 @@ import { NodeConnectionTypes, type INodeType, type INodeTypeDescription, IWebhoo
 
 const API_BASE_URL = 'https://api.plumoai.com';
 
-export class PlumoAiAgentTrigger implements INodeType {
+export class PlumoAIAgentTrigger implements INodeType {
 	description: INodeTypeDescription = {
-		displayName: 'PlumoAi Agent Trigger',
-		name: 'plumoAiAgentTrigger',
+		displayName: 'PlumoAI Agent Trigger',
+		name: 'plumoAIAgentTrigger',
 		icon: "file:../../icons/plumoai.png",
 		group: ["trigger"],
 		inputs: [NodeConnectionTypes.AiLanguageModel],
@@ -30,14 +30,14 @@ export class PlumoAiAgentTrigger implements INodeType {
 			}
 		],
 		version: 1,
-		description: 'Trigger a PlumoAi Agent',
+		description: 'Trigger a PlumoAI Agent',
 		defaults: {
-			name: 'PlumoAi Agent Trigger',
+			name: 'PlumoAI Agent Trigger',
 		},
 		usableAsTool: true,
 		credentials: [
 			{
-				name: 'plumoAiApi',
+				name: 'plumoAIAPI',
 				required: true,
 				displayOptions: {
 					show: {

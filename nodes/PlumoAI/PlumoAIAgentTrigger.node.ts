@@ -61,47 +61,22 @@ export class PlumoAIAgentTrigger implements INodeType {
 				default: 'apiToken',
 			},
 			{
-				displayName: 'Trigger On',
-				name: 'event',
-				type: 'options',
-				options: [
-				
-					{
-						name: 'Record Added', 
-						value: 'vt_rc',
-						action: 'Record Added', 
-						description: 'This will trigger the node when a record is added.',
-						
-					},
-					{
-						name: 'Record Updated',
-						value: 'vt_ru',
-						action: 'Record Updated',
-						description: 'This will trigger the node when a record is updated.',
-					},
-					{
-						name: 'Record Added or Updated',
-						value: 'vt_rmc' ,
-						action: 'Record Added or Updated',
-						description: 'This will trigger the node when a record is added or updated.',
-						
-					}
-				],
-				default: [] ,
-			},	
-			{
 				displayName: 'Operation',
 				name: 'operation',
 				type: 'options',
 				noDataExpression: true,
 				options: [
 					{
-						name: 'Create New Agent',
+						name: 'Create New AI Agent',
 						value: 'new',
+						action: 'Create New AI Agent',
+						description: 'Create New AI Agent in PlumoAI'
 					},	
 					{
-						name: 'Connect With Existing Agent',
+						name: 'Connect With Existing AI Agent',
 						value: 'connect',
+						action: 'Connect With Existing AI Agent',
+						description: 'Connect With Existing N8N AI Agent in PlumoAI'
 					},
 				],
 				default: [],

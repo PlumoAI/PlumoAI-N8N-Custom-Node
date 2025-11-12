@@ -214,7 +214,7 @@ export class PlumoAIAgentTrigger implements INodeType {
 				});
 				
 				return response.data.				
-				filter((project: any) => project.template_proj_type_fid==8 && project.project_aiagent_config==null).map((project: any) => ({
+				filter((project: any) => project.template_proj_type_fid==8).map((project: any) => ({
 					name: project.project_name,
 					value: project.project_id,
 				}));

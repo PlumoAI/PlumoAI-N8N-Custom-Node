@@ -42,9 +42,8 @@ export class PlumoAi implements INodeType {
 	description: INodeTypeDescription = {
 		displayName: 'PlumoAi',
 		name: 'plumoAi',
-		// icon: "fa:hexagon-nodes",
-		badgeIconUrl: "fa:hexagon-nodes",
-		iconUrl: 'https://app.plumoai.com/favicon.png',
+		icon: "fa:hexagon-nodes",
+		badgeIconUrl: 'https://app.plumoai.com/favicon.png',
 		iconBasePath: 'file:../../icons/plumoai.png',	
 		group: ["output"],
 		version: 1,

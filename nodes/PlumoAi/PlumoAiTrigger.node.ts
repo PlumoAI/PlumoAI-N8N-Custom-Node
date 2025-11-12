@@ -8,11 +8,11 @@ import type {
 } from 'n8n-workflow';
 import {  NodeOperationError,NodeConnectionTypes } from 'n8n-workflow';
 
-export class PlumoaiTrigger implements INodeType {
+export class PlumoAiTrigger implements INodeType {
 	description: INodeTypeDescription = {
 		credentials: [
 			{
-				name: 'plumoaiApi',
+				name: 'plumoAiApi',
 				required: true,
 				displayOptions: {
 					show: {
@@ -21,23 +21,23 @@ export class PlumoaiTrigger implements INodeType {
 				},
 			},
 		],
-		displayName: 'PlumoAI Trigger',
+		displayName: 'PlumoAi Trigger',
 		defaults: {
-			name: 'PlumoAI Trigger',
+			name: 'PlumoAi Trigger',
 		},
-		description: 'Starts the workflow when PlumoAI events occur',
+		description: 'Starts the workflow when PlumoAi events occur',
 		group: ['trigger'],
-		icon: 'file:plumoai.png',
+		icon: 'file:../icons/plumoai.png',
 		inputs: [],
 		// keep sendinblue name for backward compatibility
-		name: 'plumoaiTrigger',
-		outputs: [NodeConnectionTypes.Main],
+		name: 'plumoAiTrigger',
 		version: 1,
+		outputs: [NodeConnectionTypes.Main],
 		webhooks: [
 			{
 				name: 'default',
 				httpMethod: 'POST',
-				path: 'plumoai',
+				path: 'plumoAi',
 			},
 		],
 		properties: [
@@ -52,19 +52,7 @@ export class PlumoaiTrigger implements INodeType {
 					}
 				],
 				default: 'apiToken',
-			},
-			{
-				displayName: 'Resource',
-				default: 'transactional',
-				name: 'type',
-				options: [
-					{ name: 'Inbound', value: 'inbound' },
-					{ name: 'Marketing', value: 'marketing' },
-					{ name: 'Transactional', value: 'transactional' },
-				],
-				required: true,
-				type: 'options',
-			},			
+			},				
 			{
 				displayName: 'Trigger On',
 				name: 'event',
@@ -135,7 +123,7 @@ export class PlumoaiTrigger implements INodeType {
 		loadOptions: {
 			async getProjects(this: ILoadOptionsFunctions) {
 				try{
-				const credentials = await this.getCredentials('plumoaiApi');
+				const credentials = await this.getCredentials('plumoAiApi');
 				const verifyResponse = await this.helpers.httpRequest({
 					method: 'GET',
 					url: 'https://api.plumoai.com/Auth/oauth/me',
@@ -181,7 +169,7 @@ export class PlumoaiTrigger implements INodeType {
 			},
 			async getProjectTables(this: ILoadOptionsFunctions) {
 				
-				const credentials = await this.getCredentials('plumoaiApi');
+				const credentials = await this.getCredentials('plumoAiApi');
 				const verifyResponse = await this.helpers.httpRequest({
 					method: 'GET',
 					url: 'https://api.plumoai.com/Auth/oauth/me',
@@ -356,7 +344,7 @@ export class PlumoaiTrigger implements INodeType {
 	
 }
 async function getCredentialsAndVerify (this: IHookFunctions) {
-	const credentials = await this.getCredentials('plumoaiApi');
+	const credentials = await this.getCredentials('plumoAiApi');
 	const verifyResponse = await this.helpers.httpRequest({
 		method: 'GET',
 		url: 'https://api.plumoai.com/Auth/oauth/me',

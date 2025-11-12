@@ -201,7 +201,7 @@ export class PlumoAIAgentTrigger implements INodeType {
 								"p_project_id":0,
 								"p_LoggedInUser":verifyResponse.data.userId,
 								"p_CompanyID":verifyResponse.data.companyIds[0],
-								"p_Location_fid":this.getNodeParameter('workspace', 0)??-1,
+								"p_Location_fid":-1,
 								"p_proj_status":"P",
 								"p_PageNumber":1,
 								"p_RowsOfPage":1000
@@ -214,7 +214,7 @@ export class PlumoAIAgentTrigger implements INodeType {
 				});
 				
 				return response.data.				
-				filter((project: any) => project.template_proj_type_fid==8).map((project: any) => ({
+				filter((project: any) => project.location_fid == this.getNodeParameter('workspace', 0) && project.template_proj_type_fid==8).map((project: any) => ({
 					name: project.project_name,
 					value: project.project_id,
 				}));

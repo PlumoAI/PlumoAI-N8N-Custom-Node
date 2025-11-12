@@ -36,8 +36,7 @@
 		"nodes": [
 			"dist/nodes/PlumoAI/PlumoAITrigger.node.js",
 			"dist/nodes/PlumoAI/PlumoAIAgentTrigger.node.js",
-			"dist/nodes/PlumoAI/PlumoAI.node.js",
-			"dist/nodes/PlumoAI/PlumoAIAgent.node.js"
+			"dist/nodes/PlumoAI/PlumoAI.node.js"
 		]
 	},
 	"devDependencies": {

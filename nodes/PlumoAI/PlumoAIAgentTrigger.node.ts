@@ -37,23 +37,14 @@ export class PlumoAIAgentTrigger implements INodeType {
 		usableAsTool: true,
 		credentials: [
 			{
-				name: 'plumoaiApi',
+				name: 'plumoAIAPI',
 				required: true,
 				displayOptions: {
 					show: {
 						authentication: ['apiToken' ],
 					},
 				},
-			},
-			{
-				name: 'PlumoAIAPI',
-				required: true,
-				displayOptions: {
-					show: {
-						authentication: ['apiToken' ],
-					},
-				},
-			}			
+			}
 		],
 		
 		properties: [
@@ -69,18 +60,6 @@ export class PlumoAIAgentTrigger implements INodeType {
 				],
 				default: 'apiToken',
 			},
-			{
-				displayName: 'Authentication',
-				name: 'authentication',
-				type: 'options',
-				options: [
-					{
-						name: 'API Token',
-						value: 'apiToken',
-					}
-				],
-				default: 'apiToken',
-			},		
 			{
 				displayName: 'Trigger On',
 				name: 'event',
@@ -180,7 +159,7 @@ export class PlumoAIAgentTrigger implements INodeType {
 		loadOptions: {
 			async getWorkspaces(this: ILoadOptionsFunctions) {
 				try{
-				const credentials = await this.getCredentials('PlumoAIAPI');
+				const credentials = await this.getCredentials('plumoAIAPI');
 				const verifyResponse = await this.helpers.httpRequest({
 					method: 'GET',
 					url: `${API_BASE_URL}/Auth/oauth/me`,
@@ -221,7 +200,7 @@ export class PlumoAIAgentTrigger implements INodeType {
 			},
 			async getAgents(this: ILoadOptionsFunctions) {
 				try{
-				const credentials = await this.getCredentials('PlumoAIAPI');
+				const credentials = await this.getCredentials('plumoAIAPI');
 				const verifyResponse = await this.helpers.httpRequest({
 					method: 'GET',
 					url: `${API_BASE_URL}/Auth/oauth/me`,
@@ -278,7 +257,7 @@ export class PlumoAIAgentTrigger implements INodeType {
 				
 				try{
 				
-				const credentials = await this.getCredentials('PlumoAIAPI');
+				const credentials = await this.getCredentials('plumoAIAPI');
 				const verifyResponse = await this.helpers.httpRequest({
 					method: 'GET',
 					url: `${API_BASE_URL}/Auth/oauth/me`,
@@ -344,7 +323,7 @@ export class PlumoAIAgentTrigger implements INodeType {
 			
 				if(webhookData.aiagent_id){
 				try{
-					const credentials = await this.getCredentials('PlumoAIAPI');
+					const credentials = await this.getCredentials('plumoAIAPI');
 					const verifyResponse = await this.helpers.httpRequest({
 						method: 'GET',
 						url: `${API_BASE_URL}/Auth/oauth/me`,
@@ -407,7 +386,7 @@ export class PlumoAIAgentTrigger implements INodeType {
 		
 	};
 	async webhook(this: IWebhookFunctions): Promise<IWebhookResponseData> {
-		var credentials = await this.getCredentials('PlumoAIAPI');
+		var credentials = await this.getCredentials('plumoAIAPI');
 		var verifyResponse = await this.helpers.httpRequest({
 			method: 'GET',
 			url: `${API_BASE_URL}/Auth/oauth/me`,

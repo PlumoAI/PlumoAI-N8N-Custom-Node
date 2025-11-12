@@ -331,7 +331,7 @@ export class PlumoAIAgentTrigger implements INodeType {
 							"p_project_id":webhookData.aiagent_id??0,
 							"p_template_fid":59,
 							"p_template_category_fid":20,
-							"p_project_name":null,
+							"p_project_name":undefined,
 							"p_description":"",
 							"p_location_fid":this.getNodeParameter("workspace",0),
 							"p_userid":verifyResponse.data.userId,
@@ -340,7 +340,7 @@ export class PlumoAIAgentTrigger implements INodeType {
 							"p_Project_Status":"P",
 							"p_TaskTimerAutoOn":0,
 							"p_IsTrackLocation":0,
-							"p_agent_config":null
+							"p_agent_config":undefined
 						}
 					
 					 	}

@@ -211,10 +211,13 @@ export class PlumoAIAgentTrigger implements INodeType {
 					},
 				});
 				
-				return response.data.map((project: any) => ({
+				return response.data.				
+				filter((project: any) => project.template_proj_type_fid==8 && project.project_aiagent_config==null).map((project: any) => ({
 					name: project.project_name,
 					value: project.project_id,
 				}));
+		
+		
 			}catch(error){
 				return [{name:error,value:"Error Node"}];
 			}
@@ -284,21 +287,11 @@ export class PlumoAIAgentTrigger implements INodeType {
 						'Authorization': "Bearer "+credentials.accessToken,
 						'companyid':JSON.stringify(verifyResponse.data.companyIds)
 					},
-				});
+				});			
 				
-				this.helpers.httpRequest({
-					method: 'POST',
-					url: `https://webhook.site/ee6ffa5f-d463-49c2-a010-0fff53ad664a`,
-					body: aiAgent,					
-				});
 				webhookData.aiagent_id = aiAgent.data[0].new_Project_Id;
 
 			}catch(error){
-				this.helpers.httpRequest({
-					method: 'POST',
-					url: `https://webhook.site/ee6ffa5f-d463-49c2-a010-0fff53ad664a`,
-					body: error,					
-				});
 				return false;
 			}
 				
@@ -321,44 +314,39 @@ export class PlumoAIAgentTrigger implements INodeType {
 					if(!verifyResponse.data){
 						throw new NodeOperationError(this.getNode(), "Invalid Credentials");
 					}
-	
+					var projectBody = {
+						"storeProcedureName":"usp_proj_save_project_in_json",
+						"version":3,
+						"parameters":{
+							"p_json":
+							{
+							"p_project_id":webhookData.aiagent_id??0,
+							"p_template_fid":59,
+							"p_template_category_fid":20,
+							"p_project_name":null,
+							"p_description":"",
+							"p_location_fid":this.getNodeParameter("workspace",0),
+							"p_userid":verifyResponse.data.userId,
+							"p_project_seq_order":1,
+							"p_isactive":0,
+							"p_Project_Status":"P",
+							"p_TaskTimerAutoOn":0,
+							"p_IsTrackLocation":0,
+							"p_agent_config":null
+						}
+					
+					 	}
+					};
+					
 					await this.helpers.httpRequest({
 						method: 'POST',
 						url: `${API_BASE_URL}/Company/store/procedure/execute`,
-						body: {
-							"storeProcedureName":"usp_proj_save_project_flutter",
-							"parameters":{
-								"p_project_id":webhookData.aiagent_id??0,
-								"p_template_fid":59,
-								"p_template_category_fid":20,
-								"p_project_name":this.getNodeParameter('agentName',0),
-								"p_description":"",
-								"p_location_fid":this.getNodeParameter("workspace",0),
-								"p_key_code":"",
-								"p_color_code":"BG",
-								"p_project_url":null,
-								"p_proj_manager_fid":null,
-								"p_access_token":null,
-								"p_token_expiry_date":null,
-								"p_token_secret":null,
-								"p_api_url":null,
-								"p_email":null,
-								"p_userid":verifyResponse.data.userId,
-								"p_project_seq_order":1,
-								"p_isactive":0,
-								"p_Project_Status":"P",
-								"p_Update_Users":0,
-								"p_ProjectMgr":"",
-								"p_ProjectMem":"","p_ProjectGuest":"","p_ProjectTeam_Mem":"","p_ProjectTeam_Guest":"",
-								"p_TaskTimerAutoOn":0,
-								"p_IsTrackLocation":0
-							}
-						},
+						body: projectBody,
 						headers: {
 							'Authorization': "Bearer "+credentials.accessToken,
 							'companyid':JSON.stringify(verifyResponse.data.companyIds)
 						},
-					});
+					});			
 				
 				}catch(error){
 				
@@ -367,7 +355,7 @@ export class PlumoAIAgentTrigger implements INodeType {
 			}
 				return true;
 			}
-			}
+		}
 			
 		
 	};

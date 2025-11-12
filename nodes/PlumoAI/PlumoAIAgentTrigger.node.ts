@@ -13,7 +13,7 @@ export class PlumoAIAgentTrigger implements INodeType {
 		inputNames: ["Ai Language Model"],
 		outputNames: ["Ai Agent"],
 		mockManualExecution:undefined,
-		maxNodes:1,
+		maxNodes:1,		
 		outputs: [NodeConnectionTypes.Main],
 		webhooks:[
 			{
@@ -246,17 +246,19 @@ export class PlumoAIAgentTrigger implements INodeType {
 				}
 
 				const webhookUrl = this.getNodeWebhookUrl('default') as string;
-
+				var isNew = (webhookData.aiagent_id??0)==0?true:false;
 				var aiAgent = await this.helpers.httpRequest({
 					method: 'POST',
 					url: `${API_BASE_URL}/Company/store/procedure/execute`,
 					body: {
-						"storeProcedureName":"usp_proj_save_project_flutter",
+						"storeProcedureName":"usp_proj_save_project_in_json",
 						"parameters":{
+						    "p_json":
+							{
 							"p_project_id":webhookData.aiagent_id??0,
 							"p_template_fid":59,
 							"p_template_category_fid":20,
-							"p_project_name":this.getNodeParameter('agentName',0),
+							"p_project_name":isNew?this.getNodeParameter('agentName',0):null,
 							"p_description":"",
 							"p_location_fid":this.getNodeParameter("workspace",0),
 							"p_key_code":"",
@@ -276,7 +278,16 @@ export class PlumoAIAgentTrigger implements INodeType {
 							"p_ProjectMgr":"",
 							"p_ProjectMem":"","p_ProjectGuest":"","p_ProjectTeam_Mem":"","p_ProjectTeam_Guest":"",
 							"p_TaskTimerAutoOn":0,
-							"p_IsTrackLocation":0
+							"p_IsTrackLocation":0,
+							"p_agent_config":{
+								workflowId:this.getWorkflow().id,
+								workflowName:this.getNode().name,
+								workflowCreatedAt:new Date().toISOString(),
+								workflowUpdatedAt:new Date().toISOString(),
+								workflowWebhookUrl:webhookUrl,
+							}
+						}
+					
 						}
 					},
 					headers: {

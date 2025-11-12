@@ -40,7 +40,7 @@ export class PlumoAiAgentTrigger implements INodeType {
 		usableAsTool: true,
 		credentials: [
 			{
-				name: 'plumoaiApi',
+				name: 'plumoAiApi',
 				required: true,
 				displayOptions: {
 					show: {
@@ -71,11 +71,11 @@ export class PlumoAiAgentTrigger implements INodeType {
 				noDataExpression: true,
 				options: [
 					{
-						name: 'Create New Aigent',
+						name: 'Create New Agent',
 						value: 'new',
-					},
+					},	
 					{
-						name: 'Connect With Existing Aigent',
+						name: 'Connect With Existing Agent',
 						value: 'connect',
 					},
 				],

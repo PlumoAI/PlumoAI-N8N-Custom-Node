@@ -4,14 +4,112 @@ import type {
 	INodeTypeDescription,
 	IExecuteFunctions,
 	INodeExecutionData,
-	INodeProperties
-	// IWebhookResponseData,
-	// IWebhookFunctions,
-	// IHookFunctions
-	
+	INodeProperties,
+	ICredentialDataDecryptedObject,
+	INodePropertyOptions,
+	ResourceMapperFields,
+	IDataObject,
+	MultiPartFormData	
 } from 'n8n-workflow';
 import {  NodeOperationError,NodeConnectionTypes,ResourceMapperField } from 'n8n-workflow';
-import FormData from 'form-data';
+
+const API_BASE_URL = 'https://api.plumoai.com';
+
+
+interface VerifyResponse {
+	data: {
+		userId: number;
+		companyIds: number[];
+	};
+}
+
+async function getCredentialsAndVerify(this: ILoadOptionsFunctions | IExecuteFunctions): 
+Promise<{ credentials: ICredentialDataDecryptedObject; verifyResponse: VerifyResponse }> {
+	const credentials = await this.getCredentials('plumoAiApi');
+	const verifyResponse = await this.helpers.httpRequest({
+		method: 'GET',
+		url: `${API_BASE_URL}/Auth/oauth/me`,
+		headers: {
+			'Authorization': `Bearer ${credentials.accessToken}`,
+		},
+	});
+
+	if (!verifyResponse.data) {
+		throw new NodeOperationError(this.getNode(), "Invalid Credentials");
+	}
+
+	return { credentials, verifyResponse };
+}
+
+async function executeStoreProcedure(
+	this: ILoadOptionsFunctions | IExecuteFunctions,
+	credentials: ICredentialDataDecryptedObject,
+	verifyResponse: VerifyResponse,
+	storeProcedureName: string,
+	parameters: Record<string, unknown>,
+	version?: number
+): Promise<{ data: unknown[] }> {
+	const body: Record<string, unknown> = {
+		storeProcedureName,
+		parameters,
+	};
+	if (version) {
+		body.version = version;
+	}
+
+	return await this.helpers.httpRequest({
+		method: 'POST',
+		url: `${API_BASE_URL}/company/store/procedure/execute`,
+		body,
+		headers: {
+			'Authorization': `Bearer ${credentials.accessToken}`,
+			'companyid': JSON.stringify(verifyResponse.data.companyIds),
+		},
+	});
+}
+
+async function getTables(this: ILoadOptionsFunctions | IExecuteFunctions, credentials: ICredentialDataDecryptedObject, verifyResponse: VerifyResponse): 
+Promise<{ data: unknown[] }> {
+	return await executeStoreProcedure.call(
+		this,
+		credentials,
+		verifyResponse,
+		'usp_proj_get_projectworkflow',
+		{
+			p_project_id: this.getNodeParameter('project', 0),
+		}
+	);
+}
+
+async function getRecordFields(
+	this: ILoadOptionsFunctions | IExecuteFunctions,
+	accessToken: string,
+	companyIds: number[],
+	projectId?: number,
+	tableId?: number
+): Promise<Array<{ field_name: string; proj_field_id: number; task_actual_fieldname?: string; type?: string; field_value_list?: string; is_required?: number }>> {
+	const projectFid = projectId ?? (this.getNodeParameter ? this.getNodeParameter('project', 0) : 0);
+	const tableFid = tableId ?? (this.getNodeParameter ? this.getNodeParameter('table', 0) : 0);
+
+	const response = await this.helpers.httpRequest({
+		method: 'POST',
+		url: `${API_BASE_URL}/company/store/procedure/execute`,
+		body: {
+			storeProcedureName: 'usp_proj_get_project_fields',
+			version: 2,
+			parameters: {
+				p_project_fid: projectFid,
+				p_proj_workitem_type_fid: tableFid,
+			},
+		},
+		headers: {
+			'Authorization': `Bearer ${accessToken}`,
+			'companyid': JSON.stringify(companyIds),
+		},
+	});
+
+	return response.data[0] || [];
+}
 
 
 export const uploadAttachmentField: INodeProperties[] = [
@@ -21,7 +119,7 @@ export const uploadAttachmentField: INodeProperties[] = [
 		name: 'attachment',
 		type: 'string',
 		default: '',
-		required: false,
+
 		displayOptions: {
 			show: {
 				resource: ["record"],
@@ -41,8 +139,8 @@ export const uploadAttachmentField: INodeProperties[] = [
 export class PlumoAI implements INodeType {
 	description: INodeTypeDescription = {
 		displayName: 'PlumoAI',
-		name: 'plumoAI',
-		icon: "file:../../icons/plumoai.png",
+		name: 'plumoAi',
+		icon: "file:../../icons/plumoai.svg",
 		group: ["output"],
 		version: 1,
 		subtitle: '={{$parameter["operation"] + ": " + $parameter["resource"]}}',
@@ -55,7 +153,7 @@ export class PlumoAI implements INodeType {
 		outputs: [NodeConnectionTypes.Main],
 		credentials: [
 			{
-				name: 'PlumoAIAPI',
+				name: 'plumoAiApi',
 				required: true,
 				displayOptions: {
 					show: {
@@ -139,13 +237,13 @@ export class PlumoAI implements INodeType {
 					{
 						name: 'Get All Tables',
 						value: 'get',						
-						action: 'Get All Tables',
+						action: 'Get all tables',
 					}
 				],
 				default: 'get',
 			},			
 			{
-				displayName: 'Project',
+				displayName: 'Project Name or ID',
 				name: 'project',
 				type: 'options',
 				required: true,
@@ -161,7 +259,7 @@ export class PlumoAI implements INodeType {
 				description: 'Select a project from the API. Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>.',
 			},			
 			{
-				displayName: 'Table',
+				displayName: 'Table Name or ID',
 				name: 'table',
 				type: 'options',
 				required: true,
@@ -184,7 +282,7 @@ export class PlumoAI implements INodeType {
 				displayName: 'Fetch Only Updated After',
 				name: 'dataUpdatedAfter',
 				type: 'dateTime',
-				required: false,
+
 				displayOptions: {
 					hide: {
 						project: ["*"],
@@ -198,7 +296,7 @@ export class PlumoAI implements INodeType {
 				description: 'Select a table from the API. Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>.',
 			},
 			{
-				displayName: 'Status',
+				displayName: 'Status Name or ID',
 				name: 'status',
 				type: 'options',
 				required: true,
@@ -260,7 +358,7 @@ export class PlumoAI implements INodeType {
 			
 			async getProjects(this: ILoadOptionsFunctions) {
 				try{
-				const credentials = await this.getCredentials('PlumoAIAPI');
+				const credentials = await this.getCredentials('plumoAiApi');
 				const verifyResponse = await this.helpers.httpRequest({
 					method: 'GET',
 					url: 'https://api.plumoai.com/Auth/oauth/me',
@@ -296,174 +394,118 @@ export class PlumoAI implements INodeType {
 					},
 				});
 				
-				return response.data.map((project: any) => ({
+				return response.data.map((project: { project_name: string; project_id: number }) => ({
 					name: project.project_name,
 					value: project.project_id,
 				}));
-			}catch(error){
-				return [{name:error,value:"Error Node"}];
+			} catch (error) {
+				return [{ name: String(error), value: "Error Node" }];
 			}
 			},
 			async getProjectTables(this: ILoadOptionsFunctions) {
-				
-				const credentials = await this.getCredentials('PlumoAIAPI');
-				const verifyResponse = await this.helpers.httpRequest({
-					method: 'GET',
-					url: 'https://api.plumoai.com/Auth/oauth/me',
-					headers: {
-						'Authorization': "Bearer "+credentials.accessToken,
-					},
-				});
-
-				if(!verifyResponse.data){
-					throw new NodeOperationError(this.getNode(), "Invalid Credentials");
-				}
-
-				const response = await 
-				getTables.call(this,credentials, verifyResponse);
-				return response.data.map((table: any) => ({
+				const { credentials, verifyResponse } = await getCredentialsAndVerify.call(this);
+				const response = await getTables.call(this, credentials, verifyResponse);
+				const tables = response.data as { workitem_type: string; proj_workitem_type_fid: number }[];
+				return tables.map((table: { workitem_type: string; proj_workitem_type_fid: number }) => ({
 					name: table.workitem_type,
 					value: table.proj_workitem_type_fid,
 				}));
-			
 			},
-			async getProjectTableStatus(this: ILoadOptionsFunctions) {
-				
-				const credentials = await this.getCredentials('PlumoAIAPI');
-				const verifyResponse = await this.helpers.httpRequest({
-					method: 'GET',
-					url: 'https://api.plumoai.com/Auth/oauth/me',
-					headers: {
-						'Authorization': "Bearer "+credentials.accessToken,
-					},
-				});
+			async getProjectTableStatus(this: ILoadOptionsFunctions) : Promise<INodePropertyOptions[]>{
+				const { credentials, verifyResponse } = await getCredentialsAndVerify.call(this);
 
-				if(!verifyResponse.data){
-					throw new NodeOperationError(this.getNode(), "Invalid Credentials");
-				}
+				const response = await executeStoreProcedure.call(
+					this,
+					credentials,
+					verifyResponse,
+					'usp_proj_get_projectworkflow',
+					{
+						p_project_id: this.getNodeParameter('project', 0),
+					}
+				);
 
-				const response = await this.helpers.httpRequest({
-					method: 'POST',
-					url: 'https://api.plumoai.com/company/store/procedure/execute',
-					body: {
-							"storeProcedureName":"usp_proj_get_projectworkflow",
-							"parameters":{	
-								"p_project_id":this.getNodeParameter('project',0),
-							}
-						},
-					headers: {
-						'Authorization': "Bearer "+credentials.accessToken,
-						'companyid':JSON.stringify(verifyResponse.data.companyIds)
-					},
-				});
+				const selectedProjectTable = 
+				(response.data as { proj_workitem_type_fid: number; proj_workflow_id: number }[]).find(
+					(table: { proj_workitem_type_fid: number; proj_workflow_id: number }) =>
+						table.proj_workitem_type_fid == this.getNodeParameter('table', 0)
+				);
 
-				var selectedProjectTable = response.data.find((table: any) => table.proj_workitem_type_fid == this.getNodeParameter('table',0));
-
-				if(!selectedProjectTable){
+				if (!selectedProjectTable || !selectedProjectTable.proj_workflow_id) {
 					return [];
 				}
-				const statusResponse = await this.helpers.httpRequest({
-					method: 'POST',
-					url: 'https://api.plumoai.com/company/store/procedure/execute',
-					body: {
-							"storeProcedureName":"usp_proj_get_workflow_status_transition",
-							"parameters":{	
-								"p_workflow_id":selectedProjectTable.proj_workflow_id,
-								"p_project_fid":this.getNodeParameter('project',0),
-								"p_proj_workitem_type_id":this.getNodeParameter('table',0)
-							}
-						},
-					headers: {
-						'Authorization': "Bearer "+credentials.accessToken,
-						'companyid':JSON.stringify(verifyResponse.data.companyIds)
-					},
-				});
-				
-				return statusResponse.data.map((status: any) => ({
+
+				const statusResponse = await executeStoreProcedure.call(
+					this,
+					credentials,
+					verifyResponse,
+					'usp_proj_get_workflow_status_transition',
+					{
+						p_workflow_id: selectedProjectTable.proj_workflow_id,
+						p_project_fid: this.getNodeParameter('project', 0),
+						p_proj_workitem_type_id: this.getNodeParameter('table', 0),
+					}
+				);
+				const statusList:{ status: string; proj_status_id: number }[] = statusResponse.data as { status: string; proj_status_id: number }[];
+				return statusList.map((status : { status: string; proj_status_id: number }) => ({
 					name: status.status,
 					value: status.proj_status_id,
 				}));
-			
 			},
-			async getRecordFields(this: ILoadOptionsFunctions) {
-				try{
-				const credentials = await this.getCredentials('PlumoAIAPI');
-				const verifyResponse = await this.helpers.httpRequest({
-					method: 'GET',
-					url: 'https://api.plumoai.com/Auth/oauth/me',
-					headers: {
-						'Authorization': "Bearer "+credentials.accessToken,
-					},
-				});
-
-				if(!verifyResponse.data){
-					throw new NodeOperationError(this.getNode(), "Invalid Credentials");
+			async getRecordFields(this: ILoadOptionsFunctions) : Promise<INodePropertyOptions[]> {
+				try {
+					const { credentials, verifyResponse } = await getCredentialsAndVerify.call(this);
+					const accessToken:string = credentials.accessToken.toString();
+					const customFields = await getRecordFields.call(this, accessToken, verifyResponse.data.companyIds);
+					const fields = customFields.map((field: { field_name: string; proj_field_id: number }) => ({
+						name: field.field_name,
+						value: field.proj_field_id,
+						data: field,
+					}));
+					
+					return fields;
+				} catch (error) {
+					return [{ name: JSON.stringify(error), value: "Error Node" }];
 				}
-
-				var customFields = await getRecordFields.call(this, credentials.accessToken, verifyResponse.data.companyIds);
-				var fields = customFields.map((field: any) => ({
-					name: field.field_name,
-					value: field.proj_field_id,
-					data:field		
-				}));
-				
-				return fields;
-			}catch(error){
-				return [{name:JSON.stringify(error),value:"Error Node"}];
-			}
-			
-
-				
 			}
 		},
 		resourceMapping: {			
-			async getRecordFieldsMapper(this: ILoadOptionsFunctions) {
+			async getRecordFieldsMapper(this: ILoadOptionsFunctions) : Promise<ResourceMapperFields> {
 				
-				try{
-				const credentials = await this.getCredentials('PlumoAIAPI');
-				const verifyResponse = await this.helpers.httpRequest({
-					method: 'GET',
-					url: 'https://api.plumoai.com/Auth/oauth/me',
-					headers: {
-						'Authorization': "Bearer "+credentials.accessToken,
-					},
-				});
+				try {
+					const { credentials, verifyResponse } = await getCredentialsAndVerify.call(this);
 
-				if(!verifyResponse.data){
-					throw new NodeOperationError(this.getNode(), "Invalid Credentials");
-				}
+					const response = await executeStoreProcedure.call(
+						this,
+						credentials,
+						verifyResponse,
+						'usp_proj_get_project_fields',
+						{
+							p_project_fid: this.getNodeParameter('project', 0),
+							p_proj_workitem_type_fid: this.getNodeParameter('table', 0),
+						},
+						2
+					);
 
-				const response = await this.helpers.httpRequest({
-					method: 'POST',
-					url: 'https://api.plumoai.com/company/store/procedure/execute',
-					body: {"storeProcedureName":"usp_proj_get_project_fields","version":2,
-						"parameters":{"p_project_fid":this.getNodeParameter('project',0),"p_proj_workitem_type_fid":this.getNodeParameter('table',0)}},
-					headers: {
-						'Authorization': "Bearer "+credentials.accessToken,
-						'companyid':JSON.stringify(verifyResponse.data.companyIds)
+				const currentNodeData: IDataObject = this.getWorkflowStaticData('node');
+				currentNodeData.recordFields = response.data[0] as { field_name: string; proj_field_id: number; task_actual_fieldname?: string; type?: string; field_value_list?: string; is_required?: number; field_tab_section?: string }[];
+				const recordFields = currentNodeData.recordFields as { field_name: string; proj_field_id: number; task_actual_fieldname?: string; type?: string; field_value_list?: string; is_required?: number; field_tab_section?: string }[];
+				const titleSectionFields = recordFields.filter((field: { field_name: string; proj_field_id: number; task_actual_fieldname?: string; type?: string; field_value_list?: string; is_required?: number; field_tab_section?: string }) => field.task_actual_fieldname == "title");
+				const leftSectionFields = recordFields.filter((field: { field_tab_section?: string, task_actual_fieldname?: string }) => field.field_tab_section == "left" &&  field.task_actual_fieldname != "title");
+				const rightSectionFields = recordFields.filter((field: { field_tab_section?: string, task_actual_fieldname?: string }) => field.field_tab_section == "right" && field.task_actual_fieldname != "title");
+				const sprintResponse = await executeStoreProcedure.call(
+					this,
+					credentials,
+					verifyResponse,
+					'usp_proj_get_sprint',
+					{
+						p_project_id: this.getNodeParameter('project', 0),
 					},
-				});
-
-				const currentNodeData = this.getWorkflowStaticData('node');
-				currentNodeData.recordFields = response.data[0];
-				
-				var titleSectionFields = response.data[0].filter((field: any)=>field.task_actual_fieldname == "title");
-				var leftSectionFields = response.data[0].filter((field: any)=>field.field_tab_section == "left" &&  field.task_actual_fieldname != "title");
-				var rightSectionFields = response.data[0].filter((field: any)=>field.field_tab_section == "right" && field.task_actual_fieldname != "title");
-				const sprintResponse = await this.helpers.httpRequest({
-					method: 'POST',
-					url: 'https://api.plumoai.com/company/store/procedure/execute',
-					body: {"storeProcedureName":"usp_proj_get_sprint","version":2,
-						"parameters":{"p_project_id":this.getNodeParameter('project',0)}},
-					headers: {
-						'Authorization': "Bearer "+credentials.accessToken,
-						'companyid':JSON.stringify(verifyResponse.data.companyIds)
-					},
-				});
-				var fields =  [...titleSectionFields, ...leftSectionFields, ...rightSectionFields].map((field: any)=>{
-					var fieldType ;
-					var fieldOptions: any[] = [];
-					// var typeOptions = {};
+					2
+				);
+				const fields =  [...titleSectionFields, ...leftSectionFields, ...rightSectionFields].map((field: { field_name: string; proj_field_id: number; type?: string; task_actual_fieldname?: string; field_value_list?: string; is_required?: number })=>{
+					let fieldType: string = "string";
+					const fieldOptions: Array<{ name: string; value: string }> = [];
+					// const typeOptions = {};
 
 					if(field.type?.toLowerCase() == "text_singleLine" || field.type?.toLowerCase() == "text_multiLine"){
 						fieldType = "string";						
@@ -472,31 +514,27 @@ export class PlumoAI implements INodeType {
 						fieldType = "options";
 
 						if(field.task_actual_fieldname=="sprint_fid"){						
-			
+							const sprintData = sprintResponse.data as { sprint_name: string; sprint_id: number }[];
 
-							fieldOptions = [...sprintResponse.data.map((sprint: any)=>{
+							fieldOptions.push(...sprintData.map((sprint: { sprint_name: string; sprint_id: number })=>{
 								return {
 									name: sprint.sprint_name,
-									value: sprint.sprint_id
+									value: sprint.sprint_id.toString()
 								};
-							}),{name: "Backlog", value: 0}];
+							}), {name: "Backlog", value: "0"});;
 						}else{						
-							fieldOptions =  
-							field.field_value_list?.split(";").map((li: any)=>{
+							fieldOptions.push(...(field.field_value_list?.split(";").map((li: string) => {
 								return {
 									name: JSON.stringify(li).split("��")[0].substring(1),
 									value: JSON.stringify(li).split("��")[0].substring(1)						
 								};
-							});		
+							}) ?? []));		
 						}
 					}
 					else if(field.type?.toLowerCase() == "integer"){	
 						fieldType = "number";						
 					}
-					else if(field.type?.toLowerCase() == "datetime"){
-						fieldType = "dateTime";						
-					}	
-					else if(field.type?.toLowerCase() == "date"){
+					else if(field.type?.toLowerCase() == "datetime" || field.type?.toLowerCase() == "date"){
 						fieldType = "dateTime";						
 					}					
 
@@ -516,9 +554,8 @@ export class PlumoAI implements INodeType {
 				})
 				;
 				return {fields: fields};
-			}catch(error){
-				
-				return {fields: []};
+			} catch (error) {
+				throw new NodeOperationError(this.getNode(), (error as Error).stack?JSON.stringify((error as Error).stack):JSON.stringify(error));
 			}
 			
 			},		
@@ -529,26 +566,16 @@ export class PlumoAI implements INodeType {
 	
 
 	async execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
-		try{
-		const credentials = await this.getCredentials('PlumoAIAPI');
-				const verifyResponse = await this.helpers.httpRequest({
-					method: 'GET',
-					url: 'https://api.plumoai.com/Auth/oauth/me',
-					headers: {
-						'Authorization': "Bearer "+credentials.accessToken,
-					},
-				});
-
-				if(!verifyResponse.data){
-					throw new NodeOperationError(this.getNode(), "Invalid Credentials");
-				}
-		const project = this.getNodeParameter('project',0);
+		try {
+			const { credentials, verifyResponse } = await getCredentialsAndVerify.call(this);
+			const project = this.getNodeParameter('project', 0);
 
 
 		if(this.getNodeParameter('resource',0) == "table"){
 			if(this.getNodeParameter('operation',0) == "get"){
-				var tablesResponse = await getTables.call(this, credentials, verifyResponse);
-				var tables = tablesResponse.data.map((table: any) => ({
+				const tablesResponse = await getTables.call(this, credentials, verifyResponse);
+				const tablesData = tablesResponse.data as { workitem_type: string; proj_workitem_type_fid: number }[];
+				const tables = tablesData.map((table: { workitem_type: string; proj_workitem_type_fid: number }) => ({
 					table_name: table.workitem_type,
 					table_id: table.proj_workitem_type_fid,
 				}))
@@ -561,27 +588,28 @@ export class PlumoAI implements INodeType {
 			const table = this.getNodeParameter('table',0);
 			if(this.getNodeParameter('operation',0) == "get"){
 
-				var recordsData = await this.helpers.httpRequest({
+				const dataUpdatedAfter = this.getNodeParameter('dataUpdatedAfter', 0);
+				const recordsData = await this.helpers.httpRequest({
 					method: 'POST',
-					url: `https://api.plumoai.com/company/grid/grid/?projectId=${project}&workitemTypeId=${table}&loadPartialData=false&sprintId=0`,
+					url: `${API_BASE_URL}/company/grid/grid/?projectId=${project}&workitemTypeId=${table}&loadPartialData=false&sprintId=0`,
 					headers: {
-						'Authorization': "Bearer "+credentials.accessToken,
+						'Authorization': `Bearer ${credentials.accessToken}`,
 						'companyid': JSON.stringify(verifyResponse.data.companyIds),
-          				'Content-Type': 'application/json'
+						'Content-Type': 'application/json',
 					},
 					body: {
-						dataUpdateOnlyAfter:this.getNodeParameter('dataUpdatedAfter' ,0)!=null && this.getNodeParameter('dataUpdatedAfter',0)!=""?this.getNodeParameter('dataUpdatedAfter',0):undefined
-					}
+						dataUpdateOnlyAfter: dataUpdatedAfter != null && dataUpdatedAfter != "" ? dataUpdatedAfter : undefined,
+					},
 				});
-				var fieldsData = recordsData.data.fields;
-				var fieldsMap: any = {};
-				fieldsData.forEach((field: any)=>{
+				const fieldsData = recordsData.data.fields;
+				const fieldsMap: Record<string, { proj_field_id: number; field_name: string }> = {};
+				fieldsData.forEach((field: { field_name: string; proj_field_id: number })=>{
 					fieldsMap[field.proj_field_id] = field;
 				});
-				var records = Object.values(recordsData.data.records).map((record: any)=>{
-					var recordMap: any = {};
-					var recordKeys = Object.keys(record);
-					for(var recordKey of recordKeys){
+				const records = Object.values(recordsData.data.records as Record<string, unknown>[]).map((record: Record<string, unknown>)=>{
+					const recordMap: Record<string, unknown> = {};
+					const recordKeys = Object.keys(record);
+					for(const recordKey of recordKeys){
 						if(fieldsMap[recordKey]){
 							recordMap[fieldsMap[recordKey].field_name] = record[recordKey];
 						}else if(recordKey.toLowerCase() == "proj_task_id"){
@@ -597,10 +625,10 @@ export class PlumoAI implements INodeType {
 					return { ...recordMap };
 				});
 
-				return [this.helpers.returnJsonArray(records)];
+				return [records.map((record)=>{ return {json: record} })] as INodeExecutionData[][];
 			}
 			else if(this.getNodeParameter('operation',0) == "add"){
-				return await addRecord.call(this, credentials, verifyResponse, project, table);
+				return await addRecord.call(this, credentials as { accessToken: string }, verifyResponse, project as number, table as number);
 			}
 		}
 		return [this.helpers.returnJsonArray([])];
@@ -610,11 +638,11 @@ export class PlumoAI implements INodeType {
 	}
 	
 }
-async function addRecord(this: IExecuteFunctions, credentials: any, verifyResponse: any, project: any, table: any) {
-	const status = this.getNodeParameter('status',0);
-				const recordFields = this.getNodeParameter('recordFields',0);		
-				var customFields = await getRecordFields.call(this, credentials.accessToken, verifyResponse);
-				var taskBasicData = {
+async function addRecord(this: IExecuteFunctions, credentials: { accessToken: string }, verifyResponse: { data: { userId: number; companyIds: number[] } }, project: number, table: number) {
+	const status = this.getNodeParameter('status', 0);
+	const recordFields = this.getNodeParameter('recordFields', 0);
+	const customFields = await getRecordFields.call(this, credentials.accessToken, verifyResponse.data.companyIds, project, table);
+				const taskBasicData = {
 			project_fid: project,
 			title: null,
 			proj_workflow_status_fid: status,
@@ -633,94 +661,82 @@ async function addRecord(this: IExecuteFunctions, credentials: any, verifyRespon
 			  user_type_id: 1
 			}],
 			called_from: "Board"
-				  } as any;
+				  } as Record<string, unknown>;
 			  
-				var taskBasicDataValues = [];
-				for(var taskBasicDataKey of Object.keys(taskBasicData)){
-			var fieldData = customFields.find((x:any) => x?.task_actual_fieldname?.toLowerCase() == taskBasicDataKey?.toLowerCase());
+				const taskBasicDataValues = [];
+				for(const taskBasicDataKey of Object.keys(taskBasicData)){
+			const fieldData = customFields.find((x: { task_actual_fieldname?: string; proj_field_id: number }) => x?.task_actual_fieldname?.toLowerCase() == taskBasicDataKey?.toLowerCase());
 			taskBasicDataValues.push(fieldData);
-			if(fieldData && (recordFields as any)?.value?.[`${fieldData.proj_field_id}`] ){
-				taskBasicData[taskBasicDataKey] = (recordFields as any)?.value?.[`${fieldData.proj_field_id}`]??null;
+			if(fieldData && (recordFields as { value?: Record<string, unknown> })?.value?.[`${fieldData.proj_field_id}`] ){
+				taskBasicData[taskBasicDataKey] = (recordFields as { value?: Record<string, unknown> })?.value?.[`${fieldData.proj_field_id}`]??null;
 			}
 				}
 			
 			
-				const data = {
-			storeProcedureName: "usp_proj_add_quick_tasks",
-			version: 4,
-			parameters: {
-			  p_Json: [
-				taskBasicData
-			  ]
-			}
-				  };
-				  var recordOutput = await this.helpers.httpRequest({
-			method: 'POST',
-			url: 'https://api.plumoai.com/company/store/procedure/execute',
-			body: data,
-			headers: {
-				'Authorization': "Bearer "+credentials.accessToken,
-				'companyid':JSON.stringify(verifyResponse.data.companyIds)
-			},
-				  });
-				  var fdata = [];
-				  if(recordOutput.data.length > 0){
-			var record = recordOutput.data[0].find((x:any) => x);
-			for(var customField of customFields){
-				var isText = false;
-				if(customField.type?.toLowerCase() == "text_singleline" || customField.type?.toLowerCase() == "text_multiline" || customField.type?.toLowerCase() == "str_picklist"){
+			const recordOutput = await executeStoreProcedure.call(
+				this,
+				credentials,
+				verifyResponse,
+				"usp_proj_add_quick_tasks",
+				{
+					p_Json: [taskBasicData],
+				},
+				4
+			);
+			const fdata = [];
+			const recordOutputData = recordOutput.data as { proj_task_id: number, task_actual_fieldname?: string; proj_field_id: number }[][];
+			if (recordOutputData.length > 0) {
+			const record = recordOutputData[0].find((x: { task_actual_fieldname?: string; proj_field_id: number }) => x);
+			for (const customField of customFields) {
+				let isText = false;
+				if (customField.type?.toLowerCase() == "text_singleline" || customField.type?.toLowerCase() == "text_multiline" || customField.type?.toLowerCase() == "str_picklist") {
 					isText = true;
 				}
-				var fieldValue = (recordFields as any)?.value?.[customField.proj_field_id];
-				var field_value_json: any = null;
+				let fieldValue = (recordFields as { value?: Record<string, unknown> })?.value?.[customField.proj_field_id];
+				let field_value_json: { countrycode: string; phonenumber: string } | null = null;
 				
-				if(fieldValue && fieldValue != null && fieldValue != "" && fieldValue != "null"){	
-					if(customField.type?.toLowerCase() == "phone"){
-						var countryCode = "";
-						if(fieldValue.includes("-")){
-							countryCode = fieldValue.split("-")[0];
-							fieldValue = fieldValue.split("-")[1];
+				if (fieldValue && fieldValue != null && fieldValue != "" && fieldValue != "null") {
+					if (customField.type?.toLowerCase() == "phone") {
+						let countryCode = "";
+						let phoneNumber = String(fieldValue);
+						if (phoneNumber.includes("-")) {
+							countryCode = phoneNumber.split("-")[0];
+							phoneNumber = phoneNumber.split("-")[1];
 						}
-						if(fieldValue.includes(" ")){
-							countryCode = fieldValue.split(" ")[0];
-							fieldValue = fieldValue.split(" ")[1];
+						if (phoneNumber.includes(" ")) {
+							countryCode = phoneNumber.split(" ")[0];
+							phoneNumber = phoneNumber.split(" ")[1];
 						}
-						field_value_json = {countrycode: countryCode, phonenumber: fieldValue};
+						field_value_json = { countrycode: countryCode, phonenumber: phoneNumber };
 						fieldValue = undefined;
 					}	
-					try{		
-					const fieldData = {
-						storeProcedureName: "usp_proj_update_task_details_onebyone",
-						version: 3,
-						parameters: {
-						  p_Json: [
-							{
-							  p_task_fid: record.proj_task_id,
-							  p_proj_field_fid: customField.proj_field_id,
-							  p_field_quotes_required: isText ? 1 : 0,
-							  p_field_value: fieldValue,
-							  p_field_text: customField.type?.toLowerCase() == "text_multiline" ? fieldValue : "",
-							  p_field_users: null,
-							  p_field_teams:null,
-							  p_field_user_type: "",
-							  p_field_json_value: field_value_json,
-							  p_uniquefield: null,
-							  p_loggedin_user: verifyResponse.data.userId,
-							}
-						  ]
-						}
-					};
-					fdata.push({fieldData, isText, type:customField.type});
-					await this.helpers.httpRequest({
-						method: 'POST',
-						url: 'https://api.plumoai.com/company/store/procedure/execute',
-						body: fieldData,
-						headers: {
-							'Authorization': "Bearer "+credentials.accessToken,
-							'companyid':JSON.stringify(verifyResponse.data.companyIds)
+					try {
+						fdata.push({ isText, type: customField.type });
+					await executeStoreProcedure.call(
+						this,
+						credentials,
+						verifyResponse,
+						"usp_proj_update_task_details_onebyone",
+						{
+							p_Json: [{
+								p_task_fid: record?.proj_task_id,
+								p_proj_field_fid: customField.proj_field_id,
+								p_field_quotes_required: isText ? 1 : 0,
+								p_field_value: fieldValue,
+								p_field_text: customField.type?.toLowerCase() == "text_multiline" ? fieldValue : "",
+								p_field_users: null,
+								p_field_teams: null,
+								p_field_user_type: "",
+								p_field_json_value: field_value_json,
+								p_uniquefield: null,
+								p_loggedin_user: verifyResponse.data.userId,
+							}],
 						},
-					});
-					}catch(error){
+						3
+					);
+					} catch (error) {
+						// Ignore errors
+						void error;
 					}
 				}
 			}
@@ -737,112 +753,82 @@ async function addRecord(this: IExecuteFunctions, credentials: any, verifyRespon
 
 				// // Now you can use the file — for example, send to API
 				// // Example with axios:
-				const formData = new FormData();
-				formData.append('file', buffer, fileName);
-				formData.append('companyId', verifyResponse.data.companyIds[0]);
-				formData.append('folderName', "field_attachments");
+
+				const multiPartFormData = {
+					data: {
+						file: buffer,
+						companyId: verifyResponse.data.companyIds[0],
+						folderName: "field_attachments",
+					},
+					files: {
+						file: buffer,
+					},
+				} as MultiPartFormData.Request;
 				
 				const fileUploadResponse = await this.helpers.httpRequest({
 					method: 'POST',
-					url: 'https://api.plumoai.com/company/file/upload',				
-					body: formData,
+					url: `${API_BASE_URL}/company/file/upload`,
+					body:multiPartFormData,
 					headers: {
-						'Authorization': "Bearer "+credentials.accessToken,
-						...formData.getHeaders()
+						'Authorization': `Bearer ${credentials.accessToken}`,
+						'content-type': 'multipart/form-data',
 					},
 				});
 
-				await this.helpers.httpRequest({
-					method: 'POST',
-					url: 'https://api.plumoai.com/company/store/procedure/execute',
-					body: {
-						"storeProcedureName":"usp_proj_save_task_attachment",
-						"version":3,
-						"parameters":{
-							"p_Json":[
-								{ "proj_task_attachement_id":0,"task_fid":record.proj_task_id,"description":fileName,"attachment":fileUploadResponse.data.key,"loggedin_user":verifyResponse.data.userId,"action":"I"}]}},
-					headers: {
-						'Authorization': "Bearer "+credentials.accessToken,
-						'companyid':JSON.stringify(verifyResponse.data.companyIds)
+				await executeStoreProcedure.call(
+					this,
+					credentials,
+					verifyResponse,
+					"usp_proj_save_task_attachment",
+					{
+						p_Json: [{
+							proj_task_attachement_id: 0,
+							task_fid: record?.proj_task_id,
+							description: fileName,
+							attachment: fileUploadResponse.data.key,
+							loggedin_user: verifyResponse.data.userId,
+							action: "I",
+						}],
 					},
-				});
-				}catch(error){
-					
+					3
+				);
+				} catch (error) {
+					// Ignore errors
+					void error;
 				}
 			}
 
 
 
 
-			var recordDetail = {"storeProcedureName":"usp_proj_get_detailed_tasks","version":2,"parameters":{"p_task_Id":record.proj_task_id}}
-			var recordDetailOutput = await this.helpers.httpRequest({
-				method: 'POST',
-				url: 'https://api.plumoai.com/company/store/procedure/execute',
-				body: recordDetail,
-				headers: {
-					'Authorization': "Bearer "+credentials.accessToken,
-					'companyid':JSON.stringify(verifyResponse.data.companyIds)
+			const recordDetailOutput = await executeStoreProcedure.call(
+				this,
+				credentials,
+				verifyResponse,
+				"usp_proj_get_detailed_tasks",
+				{
+					p_task_Id: record?.proj_task_id,
 				},
-			});
+				2
+			);
 
-
+			const recordDetailOutputData = recordDetailOutput.data as { proj_task_id: number, task_actual_fieldname?: string; proj_field_id: number }[][];
 			if(recordDetailOutput.data.length > 0){
-				var record = recordDetailOutput.data[0].find((x:any) => x);
-				var recordCustomFields = recordDetailOutput.data[1] as any;
-				var completeRecord = {
+				const record = recordDetailOutputData[0].find((x: { task_actual_fieldname?: string; proj_field_id: number }) => x) as { task_actual_fieldname?: string; proj_field_id: number };
+				const recordCustomFields = recordDetailOutput.data[1] as Array<{ field_name: string; field_value?: unknown; field_value_text?: unknown; field_json_value?: unknown }>;
+				const completeRecord = {
 					...record
-				} as any;
-				for(var customField of recordCustomFields){
+				} as Record<string, unknown>;
+				for(const customField of recordCustomFields){
 					completeRecord[customField.field_name] = customField.field_value??customField.field_value_text??customField.field_json_value;
 				}
-				return [this.helpers.returnJsonArray([completeRecord])];
+				return [[{json: completeRecord}]] as INodeExecutionData[][];
 			}
 			
-			throw new NodeOperationError(this.getNode(), "Failed to add record");
-		
-				  }else{
-					throw new NodeOperationError(this.getNode(), "Failed to add record");
-				  }
+				throw new NodeOperationError(this.getNode(), "Failed to get record details");
+			} 
+			throw new NodeOperationError(this.getNode(), "Failed to get record details");
 }
-async function getRecordFields(this: ILoadOptionsFunctions | IExecuteFunctions, credentials: any, verifyResponse: any) {
-	const response = await this.helpers.httpRequest({
-		method: 'POST',
-		url: 'https://api.plumoai.com/company/store/procedure/execute',
-		body: {
-			"storeProcedureName": "usp_proj_get_project_fields", "version": 2,
-			"parameters": { "p_project_fid": this.getNodeParameter('project', 0), "p_proj_workitem_type_fid": this.getNodeParameter('table', 0) }
-		},
-		headers: {
-			'Authorization': "Bearer " + credentials,
-			'companyid': JSON.stringify(verifyResponse.data.companyIds)
-		},
-	});
-
-	const currentNodeData = this.getWorkflowStaticData('node');
-	currentNodeData.recordFields = response.data[0];
-	var customFields = response.data[0];
-	return customFields;
-}
- async function getTables(this: IExecuteFunctions|ILoadOptionsFunctions, credentials: any, verifyResponse: any) {
-	return await this.helpers.httpRequest({
-		method: 'POST',
-		url: 'https://api.plumoai.com/company/store/procedure/execute',
-		body: {
-			"storeProcedureName": "usp_proj_get_projectworkflow",
-			"parameters": {
-				"p_project_id": this.getNodeParameter('project', 0),
-			}
-		},
-		headers: {
-			'Authorization': "Bearer " + credentials.accessToken,
-			'companyid': JSON.stringify(verifyResponse.data.companyIds)
-		},
-	});
-}
-// async function getCredentialsAndVerify (this: IHookFunctions) {
-// 	const credentials = await this.getCredentials('PlumoAIAPI');
-// 	const verifyResponse = await this.helpers.httpRequest({
-// 		method: 'GET',
 // 		url: 'https://api.plumoai.com/Auth/oauth/me',
 // 		headers: {
 // 			'Authorization': "Bearer "+credentials.accessToken,

@@ -5,8 +5,8 @@ const API_BASE_URL = 'https://api.plumoai.com';
 export class PlumoAIAgentTrigger implements INodeType {
 	description: INodeTypeDescription = {
 		displayName: 'PlumoAI Agent Trigger',
-		name: 'plumoAIAgentTrigger',
-		icon: "file:../../icons/plumoai.png",
+		name: 'plumoAiAgentTrigger',
+		icon: "file:../../icons/plumoai.svg",
 		group: ["trigger"],
 		inputs: [NodeConnectionTypes.AiLanguageModel],
 		requiredInputs: [1],
@@ -37,7 +37,7 @@ export class PlumoAIAgentTrigger implements INodeType {
 		usableAsTool: true,
 		credentials: [
 			{
-				name: 'plumoAIAPI',
+				name: 'plumoAiApi',
 				required: true,
 				displayOptions: {
 					show: {
@@ -69,20 +69,20 @@ export class PlumoAIAgentTrigger implements INodeType {
 					{
 						name: 'Create New AI Agent',
 						value: 'new',
-						action: 'Create New AI Agent',
+						action: 'Create new ai agent',
 						description: 'Create New AI Agent in PlumoAI'
 					},	
 					{
 						name: 'Connect With Existing AI Agent',
 						value: 'connect',
-						action: 'Connect With Existing AI Agent',
+						action: 'Connect with existing ai agent',
 						description: 'Connect With Existing N8N AI Agent in PlumoAI'
 					},
 				],
-				default: [],
+				default: 'new',
 			},
 			{
-				displayName: 'Workspace',
+				displayName: 'Workspace Name or ID',
 				name: 'workspace',
 				type: 'options',
 				required: true,
@@ -98,7 +98,7 @@ export class PlumoAIAgentTrigger implements INodeType {
 				description: 'Select a workspace from the API. Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>.',
 			},
 			{
-				displayName: 'Ai Agent',
+				displayName: 'Ai Agent Name or ID',
 				name: 'agent',
 				type: 'options',
 				required: true,
@@ -121,7 +121,7 @@ export class PlumoAIAgentTrigger implements INodeType {
 				type: 'string',
 				required: true,
 				default: '',
-				description: 'Enter the name of the Ai Agent to create.',
+				description: 'Enter the name of the Ai Agent to create',
 				displayOptions: {
 					show: {
 						operation: ["new"],
@@ -136,7 +136,7 @@ export class PlumoAIAgentTrigger implements INodeType {
 		loadOptions: {
 			async getWorkspaces(this: ILoadOptionsFunctions) {
 				try{
-				const credentials = await this.getCredentials('plumoAIAPI');
+				const credentials = await this.getCredentials('plumoAiApi');
 				const verifyResponse = await this.helpers.httpRequest({
 					method: 'GET',
 					url: `${API_BASE_URL}/Auth/oauth/me`,
@@ -166,18 +166,21 @@ export class PlumoAIAgentTrigger implements INodeType {
 						'companyid':JSON.stringify(verifyResponse.data.companyIds)
 					},
 				});
-				return response.data.filter((workspace: any) => workspace.is_aiagent==1).map((workspace: any) => ({
+
+				const aiAgentWorkspace = response.data.filter((workspace: { is_aiagent: number }) => workspace.is_aiagent==1);
+
+
+				return aiAgentWorkspace.map((workspace: { is_aiagent: number, Name: string, LocationID: number  }) => ({
 					name: workspace.Name?.split("§§")?.pop()??"",
 					value: workspace.LocationID,
 				}));
 			}catch(error){
-				
-				return [{name:error,value:"Error Node"}];
+				throw new NodeOperationError(this.getNode(), (error as Error).stack?JSON.stringify((error as Error).stack):JSON.stringify(error));
 			}
 			},
 			async getAgents(this: ILoadOptionsFunctions) {
 				try{
-				const credentials = await this.getCredentials('plumoAIAPI');
+				const credentials = await this.getCredentials('plumoAiApi');
 				const verifyResponse = await this.helpers.httpRequest({
 					method: 'GET',
 					url: `${API_BASE_URL}/Auth/oauth/me`,
@@ -212,16 +215,16 @@ export class PlumoAIAgentTrigger implements INodeType {
 						'companyid':JSON.stringify(verifyResponse.data.companyIds)
 					},
 				});
-				
-				return response.data.				
-				filter((project: any) => project.location_fid == this.getNodeParameter('workspace', 0) && project.template_proj_type_fid==8 && (!project?.project_aiagent_config || project.project_id==this.getNodeParameter('agent',0))).map((project: any) => ({
+				const aiAgentList = response.data.filter((project: { location_fid: number; template_proj_type_fid: number; project_aiagent_config?: unknown; project_id: number }) => project.location_fid == this.getNodeParameter('workspace', 0) && project.template_proj_type_fid==8 && (!project?.project_aiagent_config || project.project_id==this.getNodeParameter('agent',0)));
+				return aiAgentList.
+				map((project: { project_name: string; project_id: number }) => ({
 					name: project.project_name,
 					value: project.project_id,
 				}));
 		
 		
 			}catch(error){
-				return [{name:error,value:"Error Node"}];
+				throw new NodeOperationError(this.getNode(), (error as Error).stack?JSON.stringify((error as Error).stack):JSON.stringify(error));
 			}
 			},
 		}
@@ -237,7 +240,7 @@ export class PlumoAIAgentTrigger implements INodeType {
 				
 				try{
 				
-				const credentials = await this.getCredentials('plumoAIAPI');
+				const credentials = await this.getCredentials('plumoAiApi');
 				const verifyResponse = await this.helpers.httpRequest({
 					method: 'GET',
 					url: `${API_BASE_URL}/Auth/oauth/me`,
@@ -251,14 +254,18 @@ export class PlumoAIAgentTrigger implements INodeType {
 				}
 
 				const webhookUrl = this.getNodeWebhookUrl('default') as string;
-				var agentName = this.getNodeParameter('agentName',0);
+				let agentName = this.getNodeParameter('agentName',0);
 				if(this.getNodeParameter('operation',0)=="connect"){
 					webhookData.aiagent_id = this.getNodeParameter('agent',0);
 					agentName = this.getWorkflow().name;
 				}
 				
-				var isNew = (webhookData.aiagent_id??0)==0?true:false;
-				var projectBody = {
+				const isNew = (webhookData.aiagent_id??0)==0?true:false;
+
+				const match = webhookUrl.match(/^(https?:\/\/[^/?#]+)(?:[/?#]|$)/i);	
+				const domainWithScheme = match ? match[1] : null;
+				const workflowUrl = `${domainWithScheme}/workflow/${this.getWorkflow().id}`;
+				const projectBody = {
 					"storeProcedureName":"usp_proj_save_project_in_json",
 					"version":3,
 					"parameters":{
@@ -282,12 +289,13 @@ export class PlumoAIAgentTrigger implements INodeType {
 							workflowCreatedAt:new Date().toISOString(),
 							workflowUpdatedAt:new Date().toISOString(),
 							workflowWebhookUrl:webhookUrl,
+							workflowUrl:workflowUrl,
 						}
 					}
 				
 					}
 				};
-				var aiAgent = await this.helpers.httpRequest({
+				const aiAgent = await this.helpers.httpRequest({
 					method: 'POST',
 					url: `${API_BASE_URL}/Company/store/procedure/execute`,
 					body: projectBody,
@@ -299,7 +307,7 @@ export class PlumoAIAgentTrigger implements INodeType {
 				
 				webhookData.aiagent_id = aiAgent.data[0].new_Project_Id;
 
-			}catch(error){
+			}catch{
 				return false;
 			}
 				
@@ -310,7 +318,7 @@ export class PlumoAIAgentTrigger implements INodeType {
 			
 				if(webhookData.aiagent_id){
 				try{
-					const credentials = await this.getCredentials('plumoAIAPI');
+					const credentials = await this.getCredentials('plumoAiApi');
 					const verifyResponse = await this.helpers.httpRequest({
 						method: 'GET',
 						url: `${API_BASE_URL}/Auth/oauth/me`,
@@ -322,7 +330,7 @@ export class PlumoAIAgentTrigger implements INodeType {
 					if(!verifyResponse.data){
 						throw new NodeOperationError(this.getNode(), "Invalid Credentials");
 					}
-					var projectBody = {
+					const projectBody = {
 						"storeProcedureName":"usp_proj_save_project_in_json",
 						"version":3,
 						"parameters":{
@@ -356,7 +364,7 @@ export class PlumoAIAgentTrigger implements INodeType {
 						},
 					});			
 				
-				}catch(error){
+				}catch{
 				
 					return false;
 				}
@@ -368,28 +376,28 @@ export class PlumoAIAgentTrigger implements INodeType {
 		
 	};
 	async webhook(this: IWebhookFunctions): Promise<IWebhookResponseData> {
-		var credentials = await this.getCredentials('plumoAIAPI');
-		var verifyResponse = await this.helpers.httpRequest({
+		const credentials = await this.getCredentials('plumoAiApi');
+		const verifyResponse = await this.helpers.httpRequest({
 			method: 'GET',
 			url: `${API_BASE_URL}/Auth/oauth/me`,
 			headers: {
 				'Authorization': "Bearer "+credentials.accessToken,
 			},
 		});
-		var chatInput = this.getBodyData() as unknown as any;
+		const chatInput = this.getBodyData() as { sessionId?: string; message?: string };
 
-		var sessionId = chatInput.sessionId;
-		var sessionName: string | undefined;
+		const sessionId = chatInput.sessionId;
+		let sessionName: string | undefined;
 		
-		var queryData = this.getQueryData() as any;
+		const queryData = this.getQueryData() as Record<string, unknown>;
 		
 		// Check if queryData contains update chat name request
 		if (queryData && (queryData.updateChatName || 
 			Object.keys(queryData).some(key => key.toLowerCase().includes('update') && key.toLowerCase().includes('chat') && key.toLowerCase().includes('name')))) {
 			try {
 					
-					var aiLanguageModelData:any = await this.getInputConnectionData(NodeConnectionTypes.AiLanguageModel,0);
-					var chatName = await (aiLanguageModelData[0] as any).invoke("Identify the chat topic what person want AI Agent to do of the following message: "+chatInput.message+"\n Just return the topic, no other text or explanation.");
+					const aiLanguageModelData:unknown = await this.getInputConnectionData(NodeConnectionTypes.AiLanguageModel,0);
+					const chatName = await ((aiLanguageModelData as unknown[])[0] as { invoke: (message: string) => Promise<{ content?: string; }> }).invoke("Identify the chat topic what person want AI Agent to do of the following message: "+chatInput.message+"\n Just return the topic, no other text or explanation.");
 		
 				
 					await this.helpers.httpRequest({
@@ -402,8 +410,8 @@ export class PlumoAIAgentTrigger implements INodeType {
 					},
 					body: {
 						sessionId: chatInput.sessionId || sessionId,
-						sessionName: (chatName as unknown as any).content.trim()
-					},
+						sessionName: (chatName as { content?: string; }).content?.trim()??"New Chat"
+					},	
 				});				
 			} catch(error) {
 				this.helpers.httpRequest({

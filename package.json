@@ -1,15 +1,15 @@
 {
 	"name": "n8n-nodes-plumoai",
 	"version": "0.1.0",
-	"description": "",
+	"description": "PlumoAI N8N Custom Node",
 	"license": "MIT",
 	"homepage": "",
 	"keywords": [
 		"n8n-community-node-package"
 	],
 	"author": {
-		"name": "",
-		"email": ""
+		"name": "Muhammad Hussain",
+		"email": "hussain@plumoai.com"
 	},
 	"repository": {
 		"type": "git",
@@ -31,7 +31,7 @@
 		"n8nNodesApiVersion": 1,
 		"strict": true,
 		"credentials": [
-			"dist/credentials/PlumoAIApi.credentials.js"
+			"dist/credentials/plumoAiApi.credentials.js"
 		],
 		"nodes": [
 			"dist/nodes/PlumoAI/PlumoAITrigger.node.js",

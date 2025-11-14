@@ -12,7 +12,7 @@ export class PlumoAITrigger implements INodeType {
 	description: INodeTypeDescription = {
 		credentials: [
 			{
-				name: 'plumoAIAPI',
+				name: 'plumoAiApi',
 				required: true,
 				displayOptions: {
 					show: {
@@ -27,9 +27,9 @@ export class PlumoAITrigger implements INodeType {
 		},
 		description: 'Starts the workflow when PlumoAI events occur',
 		group: ['trigger'],
-		icon: "file:../../icons/plumoai.png",
+		icon: "file:../../icons/plumoai.svg",
 		inputs: [],		// keep sendinblue name for backward compatibility
-		name: 'plumoAITrigger',
+		name: 'plumoAiTrigger',
 		version: 1,
 		outputs: [NodeConnectionTypes.Main],
 		webhooks: [
@@ -62,27 +62,27 @@ export class PlumoAITrigger implements INodeType {
 						name: 'Record Added',
 						value: 'vt_rc',
 						action: 'Record Added',
-						description: 'This will trigger the node when a record is added.',
+						description: 'This will trigger the node when a record is added',
 						
 					},
 					{
 						name: 'Record Updated',
 						value: 'vt_ru',
 						action: 'Record Updated',
-						description: 'This will trigger the node when a record is updated.',
+						description: 'This will trigger the node when a record is updated',
 					},
 					{
 						name: 'Record Added or Updated',
 						value: 'vt_rmc',
 						action: 'Record Added or Updated',
-						description: 'This will trigger the node when a record is added or updated.',
+						description: 'This will trigger the node when a record is added or updated',
 						
 					}
 				],
-				default: [],
+				default: 'vt_rc',
 			},			
 			{
-				displayName: 'Project',
+				displayName: 'Project Name or ID',
 				name: 'project',
 				type: 'options',
 				required: true,
@@ -98,7 +98,7 @@ export class PlumoAITrigger implements INodeType {
 				description: 'Select a project from the API. Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>.',
 			},			
 			{
-				displayName: 'Table',
+				displayName: 'Table Name or ID',
 				name: 'table',
 				type: 'options',
 				required: true,
@@ -116,6 +116,7 @@ export class PlumoAITrigger implements INodeType {
 			}
 
 		],
+		usableAsTool: true,
 		
 	};
 	methods = {
@@ -158,7 +159,7 @@ export class PlumoAITrigger implements INodeType {
 					},
 				});
 				
-				return response.data.map((project: any) => ({
+				return response.data.map((project: { project_name: string; project_id: number }) => ({
 					name: project.project_name,
 					value: project.project_id,
 				}));
@@ -195,7 +196,7 @@ export class PlumoAITrigger implements INodeType {
 						'companyid':JSON.stringify(verifyResponse.data.companyIds)
 					},
 				});
-				return response.data.map((table: any) => ({
+				return response.data.map((table: { workitem_type: string; proj_workitem_type_fid: number }) => ({
 					name: table.workitem_type,
 					value: table.proj_workitem_type_fid,
 				}));
@@ -220,7 +221,7 @@ export class PlumoAITrigger implements INodeType {
 
 				const webhookUrl = this.getNodeWebhookUrl('default') as string;
 
-				var triggers = await this.helpers.httpRequest({
+				const triggers = await this.helpers.httpRequest({
 					method: 'POST',
 					url: 'https://api.plumoai.com/Auth/store/procedure/execute',
 					body: {
@@ -231,7 +232,7 @@ export class PlumoAITrigger implements INodeType {
 						'Authorization': "Bearer "+credentials.accessToken
 					},
 				});
-				var actions = await this.helpers.httpRequest({
+				const actions = await this.helpers.httpRequest({
 					method: 'POST',
 					url: 'https://api.plumoai.com/Auth/store/procedure/execute',
 					body: {
@@ -243,10 +244,10 @@ export class PlumoAITrigger implements INodeType {
 					},
 				});
 
-				var selectedTrigger = triggers.data.find((trigger: any) => trigger.when_type_code === this.getNodeParameter('event',0));
-				var selectedAction = actions.data.find((action: any) => action.then_type_code === "n8n_wk");
+				const selectedTrigger = triggers.data.find((trigger: { when_type_code: string }) => trigger.when_type_code === this.getNodeParameter('event',0));
+				const selectedAction = actions.data.find((action: { then_type_code: string }) => action.then_type_code === "n8n_wk");
 
-				var workflowAutomation = {
+				const workflowAutomation = {
 					"automation":{
 						"automation_id":webhookData.automation_id??"0",
 						"automation_name":`N8N Automation - ${this.getNode().name}`,
@@ -262,7 +263,7 @@ export class PlumoAITrigger implements INodeType {
 					},"companyId":verifyResponse.data.companyIds[0]
 				};
 
-				var response = await this.helpers.httpRequest({
+				const response = await this.helpers.httpRequest({
 					method: 'POST',
 					url: 'https://api.plumoai.com/company/automation/save',
 					body: workflowAutomation,
@@ -310,21 +311,21 @@ export class PlumoAITrigger implements INodeType {
 	};
 	async webhook(this: IWebhookFunctions): Promise<IWebhookResponseData> {
 	
-		var data = JSON.parse(this.getBodyData() as unknown as string);
+		const data = JSON.parse(this.getBodyData() as unknown as string);
 		 
 		if(data.length > 0){
-			var record = data[0].find((x:any) => x);
-			var recordCustomFields = data[1];
-			var completeRecord = {
+			const record = data[0].find((x: unknown) => x);
+			const recordCustomFields = data[1];
+			const completeRecord = {
 				...record
-			} as any;
-			for(var customField of recordCustomFields){
+			} as Record<string, unknown>;
+			for(const customField of recordCustomFields){
 				completeRecord[customField.field_name] = customField.field_value??customField.field_value_text??customField.field_json_value;
 			}
 			return {
 				workflowData: [
 					this.helpers.returnJsonArray(
-						[completeRecord]
+						[{json: completeRecord}]
 					)
 				],
 			}

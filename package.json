@@ -1,6 +1,6 @@
 {
 	"name": "n8n-nodes-plumoai",
-	"version": "0.1.4",
+	"version": "0.1.5",
 	"description": "PlumoAI N8N Custom Node",
 	"license": "MIT",
 	"homepage": "",
@@ -34,9 +34,9 @@
 			"dist/credentials/PlumoaiApi.credentials.js"
 		],
 		"nodes": [
-			"dist/nodes/Plumoai/PlumoaiTrigger.node.js",
-			"dist/nodes/Plumoai/PlumoaiAgentTrigger.node.js",
-			"dist/nodes/Plumoai/Plumoai.node.js"
+			"dist/nodes/Plumoai/PlumoAiTrigger.node.js",
+			"dist/nodes/Plumoai/PlumoAiAgentTrigger.node.js",
+			"dist/nodes/Plumoai/PlumoAi.node.js"
 		]
 	},
 	"devDependencies": {

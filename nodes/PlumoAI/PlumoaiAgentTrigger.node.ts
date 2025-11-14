@@ -2,7 +2,7 @@ import { NodeConnectionTypes, type INodeType, type INodeTypeDescription, IWebhoo
 
 const API_BASE_URL = 'https://api.plumoai.com';
 
-export class PlumoAIAgentTrigger implements INodeType {
+export class PlumoaiAgentTrigger implements INodeType {
 	description: INodeTypeDescription = {
 		displayName: 'PlumoAI Agent Trigger',
 		name: 'plumoAiAgentTrigger',

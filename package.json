@@ -1,6 +1,6 @@
 {
 	"name": "n8n-nodes-plumoai",
-	"version": "0.1.2",
+	"version": "0.1.3",
 	"description": "PlumoAI N8N Custom Node",
 	"license": "MIT",
 	"homepage": "",

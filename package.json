@@ -8,6 +8,7 @@
 		"n8n-community-node-package"
 	],
 	"author": {
+		"organization": "PlumoAI",
 		"name": "Muhammad Hussain",
 		"email": "hussain@plumoai.com"
 	},

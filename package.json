@@ -32,7 +32,7 @@
 		"n8nNodesApiVersion": 1,
 		"strict": true,
 		"credentials": [
-			"dist/credentials/PlumoAiApi.credentials.js"
+			"dist/credentials/PlumoAiApi.credential.js"
 		],
 		"nodes": [
 			"dist/nodes/PlumoAI/PlumoAITrigger.node.js",

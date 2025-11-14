@@ -8,7 +8,7 @@ import type {
 } from 'n8n-workflow';
 import {  NodeOperationError,NodeConnectionTypes } from 'n8n-workflow';
 
-export class PlumoaiTrigger implements INodeType {
+export class PlumoAiTrigger implements INodeType {
 	description: INodeTypeDescription = {
 		credentials: [
 			{

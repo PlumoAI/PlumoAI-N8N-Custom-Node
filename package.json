@@ -8,7 +8,6 @@
 		"n8n-community-node-package"
 	],
 	"author": {
-		"organization": "PlumoAI",
 		"name": "Muhammad Hussain",
 		"email": "hussain@plumoai.com"
 	},
@@ -35,9 +34,9 @@
 			"dist/credentials/PlumoaiApi.credentials.js"
 		],
 		"nodes": [
-			"dist/nodes/PlumoAI/PlumoAITrigger.node.js",
-			"dist/nodes/PlumoAI/PlumoAIAgentTrigger.node.js",
-			"dist/nodes/PlumoAI/PlumoAI.node.js"
+			"dist/nodes/Plumoai/PlumoaiTrigger.node.js",
+			"dist/nodes/Plumoai/PlumoaiAgentTrigger.node.js",
+			"dist/nodes/Plumoai/Plumoai.node.js"
 		]
 	},
 	"devDependencies": {

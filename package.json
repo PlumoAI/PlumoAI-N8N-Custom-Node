@@ -1,6 +1,6 @@
 {
 	"name": "@plumoai/n8n-nodes-plumoai",
-	"version": "0.1.8",
+	"version": "0.1.9",
 	"description": "PlumoAI N8N Custom Node",
 	"license": "MIT",
 	"homepage": "",
@@ -50,6 +50,6 @@
 		"n8n-workflow": "*"
 	},
 	"publishConfig": {
-    "access": "public"
-  }
+		"access": "public"
+	}
 }

@@ -31,12 +31,12 @@
 		"n8nNodesApiVersion": 1,
 		"strict": true,
 		"credentials": [
-			"dist/credentials/PlumoaiApi.credentials.js"
+			"dist/credentials/PlumoAiApi.credentials.js"
 		],
 		"nodes": [
-			"dist/nodes/Plumoai/PlumoaiTrigger.node.js",
-			"dist/nodes/Plumoai/PlumoaiAgentTrigger.node.js",
-			"dist/nodes/Plumoai/Plumoai.node.js"
+			"dist/nodes/PlumoAI/PlumoAiTrigger.node.js",
+			"dist/nodes/PlumoAI/PlumoAiAgentTrigger.node.js",
+			"dist/nodes/PlumoAI/PlumoAi.node.js"
 		]
 	},
 	"devDependencies": {

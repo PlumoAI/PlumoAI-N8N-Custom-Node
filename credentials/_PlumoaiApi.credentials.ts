@@ -7,7 +7,7 @@ import type {
 	INodeProperties,
 } from 'n8n-workflow';
 
-export class PlumoAiApi implements ICredentialType {
+export class PlumoaiApi implements ICredentialType {
 	name = 'plumoAiApi';
 
 	displayName = 'PlumoAI API Credentials API';

@@ -3,7 +3,7 @@ name: Deploy Custom n8n Node
 on:
   push:
     branches:
-      - dev
+      - main
   workflow_dispatch:
 
 jobs:
@@ -36,15 +36,15 @@ jobs:
             echo "Reset n8n..."
             rm -rf n8n-compose/plumoai-nodes
 
-      - name: Copy compiled node to server
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: "13.57.47.219"
-          username: "ec2-user"
-          port: 22
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          source: "dist/*"
-          target: "~/n8n-compose/plumoai-nodes/"
+      # - name: Copy compiled node to server
+      #   uses: appleboy/scp-action@v0.1.7
+      #   with:
+      #     host: "13.57.47.219"
+      #     username: "ec2-user"
+      #     port: 22
+      #     key: ${{ secrets.SSH_PRIVATE_KEY }}
+      #     source: "dist/*"
+      #     target: "~/n8n-compose/plumoai-nodes/"
 
       - name: Restart n8n on server
         uses: appleboy/ssh-action@v0.1.10

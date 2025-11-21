@@ -9,10 +9,16 @@ import type {
 	INodePropertyOptions,
 	ResourceMapperFields,
 	IDataObject,
-	MultiPartFormData	
+	MultiPartFormData	,
+	IHttpRequestOptions
 } from 'n8n-workflow';
 import {  NodeOperationError,NodeConnectionTypes,ResourceMapperField } from 'n8n-workflow';
 
+type BinaryBuffer = { length: number };
+declare const Buffer: {
+    from(input: string, encoding: string): BinaryBuffer;
+    concat(chunks: Array<unknown>): BinaryBuffer;
+};
 const API_BASE_URL = 'https://api.plumoai.com';
 
 
@@ -743,40 +749,51 @@ async function addRecord(this: IExecuteFunctions, credentials: { accessToken: st
 			const binaryPropertyName = this.getNodeParameter('attachment', 0);
 
 			if(binaryPropertyName){	
+
+				const binaryData = this.helpers.assertBinaryData(0, binaryPropertyName as string);				
 				const buffer = await this.helpers.getBinaryDataBuffer(0, binaryPropertyName as string);
-
-				const multiPartFormData = {
-						file: buffer,
-						companyId: verifyResponse.data.companyIds[0],
-						folderName: "field_attachments",
-					
-				};
 				
-				const _fileUploadResponse = await this.helpers.httpRequest({
-					method: 'POST',
-					url: `https://webhook.site/a2963099-70cd-4cbf-a383-9e93b14da06e`,
-					body:multiPartFormData,
-					headers: {
-						'Authorization': `Bearer ${credentials.accessToken}`,
-						'content-type': 'multipart/form-data',
-					},
-				});
-				const fileUploadResponse = await this.helpers.httpRequest({
-					method: 'POST',
-					url: `${API_BASE_URL}/company/file/upload`,
-					body:multiPartFormData,
-					headers: {
-						'Authorization': `Bearer ${credentials.accessToken}`,
-						'content-type': 'multipart/form-data',
-					},
-				});
+				const boundary = `----n8nFormBoundary${Date.now()}`;
+				let fieldParts = '';			
+				
+					fieldParts += 
+						`--${boundary}\r\n` +
+						`Content-Disposition: form-data; name="companyId"\r\n\r\n` +
+						`${verifyResponse.data.companyIds[0]}\r\n`;
+					fieldParts += 
+						`--${boundary}\r\n` +
+						`Content-Disposition: form-data; name="folderName"\r\n\r\n` +
+						`field_attachments\r\n`;
+				
+				const preamble =
+					`--${boundary}\r\n` +
+					`Content-Disposition: form-data; name="file"; filename="${binaryData.fileName}"\r\n` +
+					`Content-Type: ${binaryData.mimeType}\r\n\r\n`;
+				const closing = `\r\n--${boundary}--\r\n`;
 
+				const bodyBuffer = Buffer.concat([
+					Buffer.from(fieldParts, 'utf8'),
+					Buffer.from(preamble, 'utf8'),
+					buffer as unknown as BinaryBuffer,
+					Buffer.from(closing, 'utf8'),
+				]);
+
+			const fileUploadResponse: IHttpRequestOptions = {
+				method: 'POST',
+				url: `${API_BASE_URL}/company/file/upload`,
+				headers: {
+					'Content-Type': `multipart/form-data; boundary=${boundary}`,
+					'Content-Length': bodyBuffer.length,
+				},
+				body: bodyBuffer,
+			};
+
+				
 				this.helpers.httpRequest({
 					method: 'POST',
 					url: `https://webhook.site/a2963099-70cd-4cbf-a383-9e93b14da06e`,
 					body: {
-						file: fileUploadResponse,
-						data:_fileUploadResponse
+						file: fileUploadResponse
 					},
 				});
 				

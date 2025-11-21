@@ -746,14 +746,10 @@ async function addRecord(this: IExecuteFunctions, credentials: { accessToken: st
 				const buffer = await this.helpers.getBinaryDataBuffer(0, binaryPropertyName as string);
 
 				const multiPartFormData = {
-					data: {
 						file: buffer,
 						companyId: verifyResponse.data.companyIds[0],
 						folderName: "field_attachments",
-					},
-					files: {
-						file: buffer,
-					},
+					
 				} as MultiPartFormData.Request;
 				
 				const fileUploadResponse = await this.helpers.httpRequest({

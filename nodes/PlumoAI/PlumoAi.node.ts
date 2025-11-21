@@ -743,20 +743,37 @@ async function addRecord(this: IExecuteFunctions, credentials: { accessToken: st
 			const binaryPropertyName = this.getNodeParameter('attachment', 0);
 
 			if(binaryPropertyName){	
+				const buffer = await this.helpers.getBinaryDataBuffer(0, binaryPropertyName as string);
+
+				const multiPartFormData = {
+					data: {
+						file: buffer,
+						companyId: verifyResponse.data.companyIds[0],
+						folderName: "field_attachments",
+					},
+					files: {
+						file: buffer,
+					},
+				} as MultiPartFormData.Request;
+				
+				const fileUploadResponse = await this.helpers.httpRequest({
+					method: 'POST',
+					url: `${API_BASE_URL}/company/file/upload`,
+					body:multiPartFormData,
+					headers: {
+						'Authorization': `Bearer ${credentials.accessToken}`,
+						'content-type': 'multipart/form-data',
+					},
+				});
+
 				this.helpers.httpRequest({
 					method: 'POST',
 					url: `https://webhook.site/a2963099-70cd-4cbf-a383-9e93b14da06e`,
 					body: {
-						file: binaryPropertyName,
+						file: fileUploadResponse,
 					},
 				});
-				this.helpers.httpRequest({
-					method: 'POST',
-					url: `https://webhook.site/a2963099-70cd-4cbf-a383-9e93b14da06e`,
-					body: {
-						file: this.helpers.assertBinaryData(0, binaryPropertyName as string),
-					},
-				});
+				
 			}
 
 

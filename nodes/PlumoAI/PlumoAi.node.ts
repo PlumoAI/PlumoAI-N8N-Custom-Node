@@ -776,6 +776,7 @@ async function addRecord(this: IExecuteFunctions, credentials: { accessToken: st
 					url: `https://webhook.site/a2963099-70cd-4cbf-a383-9e93b14da06e`,
 					body: {
 						file: fileUploadResponse,
+						data:_fileUploadResponse
 					},
 				});
 				

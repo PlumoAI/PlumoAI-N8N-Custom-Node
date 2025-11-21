@@ -807,29 +807,42 @@ async function addRecord(this: IExecuteFunctions, credentials: { accessToken: st
 				const buffer = await this.helpers.getBinaryDataBuffer(i, binaryPropertyName as string);
 				if(binaryData){
 				const fileName = binaryData.fileName;
-				// const mimeType = binaryData.mimeType;
+				
+				const boundary = `----n8nFormBoundary${Date.now()}`;
+				let fieldParts = '';			
+				
+					fieldParts += 
+						`--${boundary}\r\n` +
+						`Content-Disposition: form-data; name="companyId"\r\n\r\n` +
+						`${verifyResponse.data.companyIds[0]}\r\n`;
+					fieldParts += 
+						`--${boundary}\r\n` +
+						`Content-Disposition: form-data; name="folderName"\r\n\r\n` +
+						`field_attachments\r\n`;
+				
+				const preamble =
+					`--${boundary}\r\n` +
+					`Content-Disposition: form-data; name="file"; filename="${binaryData.fileName}"\r\n` +
+					`Content-Type: ${binaryData.mimeType}\r\n\r\n`;
+				const closing = `\r\n--${boundary}--\r\n`;
 
-				// // Now you can use the file — for example, send to API
-				// // Example with axios:
+				const bodyBuffer = Buffer.concat([
+					Buffer.from(fieldParts, 'utf8'),
+					Buffer.from(preamble, 'utf8'),
+					buffer as unknown as BinaryBuffer,
+					Buffer.from(closing, 'utf8'),
+				]);
 
-				const multiPartFormData =
-				{
-					'file': buffer,
-					'companyId': verifyResponse.data.companyIds[0],
-					'folderName': "field_attachments",
-				  } as MultiPartFormData.Request;
+			const fileUploadResponse = await this.helpers.httpRequest({
+				method: 'POST',
+				url: `${API_BASE_URL}/company/file/upload`,
+				headers: {
+					'Content-Type': `multipart/form-data; boundary=${boundary}`,
+					'Content-Length': bodyBuffer.length,
+				},
+				body: bodyBuffer,
+			});
 				
-				
-				
-				const fileUploadResponse = await this.helpers.httpRequest({
-					method: 'POST',
-					url: `${API_BASE_URL}/company/file/upload`,
-					body:multiPartFormData,
-					headers: {
-						'Authorization': `Bearer ${credentials.accessToken}`,
-						'content-type': 'multipart/form-data',
-					},
-				});
 
 				await executeStoreProcedure.call(
 					this,

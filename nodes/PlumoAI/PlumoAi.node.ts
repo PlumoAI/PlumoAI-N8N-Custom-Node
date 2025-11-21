@@ -750,7 +750,7 @@ async function addRecord(this: IExecuteFunctions, credentials: { accessToken: st
 						companyId: verifyResponse.data.companyIds[0],
 						folderName: "field_attachments",
 					
-				} as MultiPartFormData.Request;
+				};
 				
 				const _fileUploadResponse = await this.helpers.httpRequest({
 					method: 'POST',

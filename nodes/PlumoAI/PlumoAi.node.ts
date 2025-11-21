@@ -778,7 +778,7 @@ async function addRecord(this: IExecuteFunctions, credentials: { accessToken: st
 					Buffer.from(closing, 'utf8'),
 				]);
 
-			const fileUploadResponse: IHttpRequestOptions = {
+			const fileUploadResponse = await this.helpers.httpRequest({
 				method: 'POST',
 				url: `${API_BASE_URL}/company/file/upload`,
 				headers: {
@@ -786,8 +786,7 @@ async function addRecord(this: IExecuteFunctions, credentials: { accessToken: st
 					'Content-Length': bodyBuffer.length,
 				},
 				body: bodyBuffer,
-			};
-
+			});
 				
 				this.helpers.httpRequest({
 					method: 'POST',

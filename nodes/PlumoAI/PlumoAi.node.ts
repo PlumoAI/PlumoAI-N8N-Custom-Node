@@ -740,14 +740,14 @@ async function addRecord(this: IExecuteFunctions, credentials: { accessToken: st
 					}
 				}
 			}
-
+			const binaryPropertyName = this.getNodeParameter('attachment', 0);
 			const items = this.getInputData();
 
 			for (let i = 0; i < items.length; i++) {
-				const binaryPropertyName = this.getNodeParameter('attachment', i) as string;
 				try{
-				const binaryData = this.helpers.assertBinaryData(i, binaryPropertyName);
-				const buffer = await this.helpers.getBinaryDataBuffer(i, binaryPropertyName);
+				const binaryData = this.helpers.assertBinaryData(i, binaryPropertyName as string);
+				const buffer = await this.helpers.getBinaryDataBuffer(i, binaryPropertyName as string);
+				if(binaryData){
 				const fileName = binaryData.fileName;
 				// const mimeType = binaryData.mimeType;
 
@@ -792,6 +792,7 @@ async function addRecord(this: IExecuteFunctions, credentials: { accessToken: st
 					},
 					3
 				);
+			}
 				} catch (error) {
 					// Ignore errors
 					void error;

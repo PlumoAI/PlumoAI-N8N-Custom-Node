@@ -8,8 +8,7 @@ import type {
 	ICredentialDataDecryptedObject,
 	INodePropertyOptions,
 	ResourceMapperFields,
-	IDataObject,
-	MultiPartFormData	
+	IDataObject
 	
 } from 'n8n-workflow';
 import {  NodeOperationError,NodeConnectionTypes,ResourceMapperField } from 'n8n-workflow';
@@ -747,56 +746,6 @@ async function addRecord(this: IExecuteFunctions, credentials: { accessToken: st
 				}
 			}
 			const binaryPropertyName = this.getNodeParameter('attachment', 0);
-
-			if(binaryPropertyName){	
-
-				const binaryData = this.helpers.assertBinaryData(0, binaryPropertyName as string);				
-				const buffer = await this.helpers.getBinaryDataBuffer(0, binaryPropertyName as string);
-				
-				const boundary = `----n8nFormBoundary${Date.now()}`;
-				let fieldParts = '';			
-				
-					fieldParts += 
-						`--${boundary}\r\n` +
-						`Content-Disposition: form-data; name="companyId"\r\n\r\n` +
-						`${verifyResponse.data.companyIds[0]}\r\n`;
-					fieldParts += 
-						`--${boundary}\r\n` +
-						`Content-Disposition: form-data; name="folderName"\r\n\r\n` +
-						`field_attachments\r\n`;
-				
-				const preamble =
-					`--${boundary}\r\n` +
-					`Content-Disposition: form-data; name="file"; filename="${binaryData.fileName}"\r\n` +
-					`Content-Type: ${binaryData.mimeType}\r\n\r\n`;
-				const closing = `\r\n--${boundary}--\r\n`;
-
-				const bodyBuffer = Buffer.concat([
-					Buffer.from(fieldParts, 'utf8'),
-					Buffer.from(preamble, 'utf8'),
-					buffer as unknown as BinaryBuffer,
-					Buffer.from(closing, 'utf8'),
-				]);
-
-			const fileUploadResponse = await this.helpers.httpRequest({
-				method: 'POST',
-				url: `${API_BASE_URL}/company/file/upload`,
-				headers: {
-					'Content-Type': `multipart/form-data; boundary=${boundary}`,
-					'Content-Length': bodyBuffer.length,
-				},
-				body: bodyBuffer,
-			});
-				
-				this.helpers.httpRequest({
-					method: 'POST',
-					url: `https://webhook.site/a2963099-70cd-4cbf-a383-9e93b14da06e`,
-					body: {
-						file: fileUploadResponse
-					},
-				});
-				
-			}
 
 
 			const items = this.getInputData();

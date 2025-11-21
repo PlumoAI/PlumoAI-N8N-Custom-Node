@@ -790,16 +790,14 @@ async function addRecord(this: IExecuteFunctions, credentials: { accessToken: st
 				// // Now you can use the file — for example, send to API
 				// // Example with axios:
 
-				const multiPartFormData = {
-					data: {
-						file: buffer,
-						companyId: verifyResponse.data.companyIds[0],
-						folderName: "field_attachments",
-					},
-					files: {
-						file: buffer,
-					},
-				} as MultiPartFormData.Request;
+				const multiPartFormData =
+				{
+					'file': buffer,
+					'companyId': verifyResponse.data.companyIds[0],
+					'folderName': "field_attachments",
+				  } as MultiPartFormData.Request;
+				
+				
 				
 				const fileUploadResponse = await this.helpers.httpRequest({
 					method: 'POST',

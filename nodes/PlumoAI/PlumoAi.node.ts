@@ -9,8 +9,8 @@ import type {
 	INodePropertyOptions,
 	ResourceMapperFields,
 	IDataObject,
-	MultiPartFormData	,
-	IHttpRequestOptions
+	MultiPartFormData	
+	
 } from 'n8n-workflow';
 import {  NodeOperationError,NodeConnectionTypes,ResourceMapperField } from 'n8n-workflow';
 

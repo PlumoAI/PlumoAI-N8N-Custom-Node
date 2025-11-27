@@ -272,18 +272,16 @@ export class PlumoAiAgentTrigger implements INodeType {
 						p_project_id: webhookData.aiagent_id
 					  };
 			  
-					const result = await storeProcedureServices.executeStoreProcedure(
-						'usp_proj_get_project_by_id',
-						parameters,
-						null,
-						1,
-						companyId
-					);
+					const requestBody ={
+						"storeProcedureName":"usp_proj_save_project_in_json",
+						"version":3,
+						"parameters":parameters				
+					};
 				
 					const projectData = await this.helpers.httpRequest({
 						method: 'POST',
 						url: `${API_BASE_URL}/Company/store/procedure/execute`,
-						body: projectBody,
+						body: requestBody,
 						headers: {
 							'Authorization': "Bearer "+credentials.accessToken,
 							'companyid':JSON.stringify(verifyResponse.data.companyIds)

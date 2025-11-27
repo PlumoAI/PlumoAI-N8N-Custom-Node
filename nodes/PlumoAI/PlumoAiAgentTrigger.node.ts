@@ -314,7 +314,7 @@ export class PlumoAiAgentTrigger implements INodeType {
 						"p_TaskTimerAutoOn":0,
 						"p_IsTrackLocation":0,
 						"p_agent_config":{
-							...aiagentData?.project_aiagent_config??{}
+							...aiagentData?.project_aiagent_config??{},
 							workflowId:this.getWorkflow().id,
 							workflowName:this.getNode().name,
 							workflowCreatedAt:new Date().toISOString(),

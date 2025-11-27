@@ -265,7 +265,7 @@ export class PlumoAiAgentTrigger implements INodeType {
 				const match = webhookUrl.match(/^(https?:\/\/[^/?#]+)(?:[/?#]|$)/i);	
 				const domainWithScheme = match ? match[1] : null;
 				const workflowUrl = `${domainWithScheme}/workflow/${this.getWorkflow().id}`;
-				var aiagentData = null;
+				let aiagentData = null;
 				if(!isNew && webhookData.aiagent_id)
 				{
 					const parameters = {
@@ -277,6 +277,7 @@ export class PlumoAiAgentTrigger implements INodeType {
 						"version":3,
 						"parameters":parameters				
 					};
+
 				
 					const projectData = await this.helpers.httpRequest({
 						method: 'POST',

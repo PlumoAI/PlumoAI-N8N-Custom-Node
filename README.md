@@ -1,247 +1,187 @@
-![Banner image](https://user-images.githubusercontent.com/10284570/173569848-c624317f-42b1-45a6-ab09-f0ea3c247648.png)
+# @plumoai/n8n-nodes-plumoai
 
-# n8n-nodes-starter
+This is an n8n community node package that integrates [PlumoAI](https://plumoai.com) with your n8n workflows. It provides three powerful nodes to interact with PlumoAI's project management and AI agent capabilities.
 
-This starter repository helps you build custom integrations for [n8n](https://n8n.io). It includes example nodes, credentials, the node linter, and all the tooling you need to get started.
+PlumoAI is a comprehensive project management and workflow automation platform that helps teams organize, track, and automate their work processes.
 
-## Quick Start
+[n8n](https://n8n.io/) is a [fair-code licensed](https://docs.n8n.io/reference/license/) workflow automation platform.
 
-> [!TIP]
-> **New to building n8n nodes?** The fastest way to get started is with `npm create @n8n/node`. This command scaffolds a complete node package for you using the [@n8n/node-cli](https://www.npmjs.com/package/@n8n/node-cli).
+[Installation](#installation)  
+[Operations](#operations)  
+[Credentials](#credentials)  
+[Compatibility](#compatibility)  
+[Usage](#usage)  
+[Resources](#resources)  
+[Version History](#version-history)
 
-**To create a new node package from scratch:**
+## Installation
 
-```bash
-npm create @n8n/node
-```
+Follow the [installation guide](https://docs.n8n.io/integrations/community-nodes/installation/) in the n8n community nodes documentation.
 
-**Already using this starter? Start developing with:**
+### Quick Installation
 
-```bash
-npm run dev
-```
+1. In n8n, go to **Settings** → **Community Nodes**
+2. Click **Install a community node**
+3. Enter the package name: `@plumoai/n8n-nodes-plumoai`
+4. Click **Install**
 
-This starts n8n with your nodes loaded and hot reload enabled.
-
-## What's Included
-
-This starter repository includes two example nodes to learn from:
-
-- **[Example Node](nodes/Example/)** - A simple starter node that shows the basic structure with a custom `execute` method
-- **[GitHub Issues Node](nodes/GithubIssues/)** - A complete, production-ready example built using the **declarative style**:
-  - **Low-code approach** - Define operations declaratively without writing request logic
-  - Multiple resources (Issues, Comments)
-  - Multiple operations (Get, Get All, Create)
-  - Two authentication methods (OAuth2 and Personal Access Token)
-  - List search functionality for dynamic dropdowns
-  - Proper error handling and typing
-  - Ideal for HTTP API-based integrations
-
-> [!TIP]
-> The declarative/low-code style (used in GitHub Issues) is the recommended approach for building nodes that interact with HTTP APIs. It significantly reduces boilerplate code and handles requests automatically.
-
-Browse these examples to understand both approaches, then modify them or create your own.
-
-## Finding Inspiration
-
-Looking for more examples? Check out these resources:
-
-- **[npm Community Nodes](https://www.npmjs.com/search?q=keywords:n8n-community-node-package)** - Browse thousands of community-built nodes on npm using the `n8n-community-node-package` tag
-- **[n8n Built-in Nodes](https://github.com/n8n-io/n8n/tree/master/packages/nodes-base/nodes)** - Study the source code of n8n's official nodes for production-ready patterns and best practices
-- **[n8n Credentials](https://github.com/n8n-io/n8n/tree/master/packages/nodes-base/credentials)** - See how authentication is implemented for various services
-
-These are excellent resources to understand how to structure your nodes, handle different API patterns, and implement advanced features.
-
-## Prerequisites
-
-Before you begin, install the following on your development machine:
-
-### Required
-
-- **[Node.js](https://nodejs.org/)** (v22 or higher) and npm
-  - Linux/Mac/WSL: Install via [nvm](https://github.com/nvm-sh/nvm)
-  - Windows: Follow [Microsoft's NodeJS guide](https://learn.microsoft.com/en-us/windows/dev-environment/javascript/nodejs-on-windows)
-- **[git](https://git-scm.com/downloads)**
-
-### Recommended
-
-- Follow n8n's [development environment setup guide](https://docs.n8n.io/integrations/creating-nodes/build/node-development-environment/)
-
-> [!NOTE]
-> The `@n8n/node-cli` is included as a dev dependency and will be installed automatically when you run `npm install`. The CLI includes n8n for local development, so you don't need to install n8n globally.
-
-## Getting Started with this Starter
-
-Follow these steps to create your own n8n community node package:
-
-### 1. Create Your Repository
-
-[Generate a new repository](https://github.com/n8n-io/n8n-nodes-starter/generate) from this template, then clone it:
+Alternatively, install via npm:
 
 ```bash
-git clone https://github.com/<your-organization>/<your-repo-name>.git
-cd <your-repo-name>
+npm install @plumoai/n8n-nodes-plumoai
 ```
 
-### 2. Install Dependencies
+## Operations
 
-```bash
-npm install
-```
+This package includes three nodes:
 
-This installs all required dependencies including the `@n8n/node-cli`.
+### 1. PlumoAI Node
 
-### 3. Explore the Examples
+The main node for interacting with PlumoAI data. Supports two resources:
 
-Browse the example nodes in [nodes/](nodes/) and [credentials/](credentials/) to understand the structure:
+#### Table Resource
+- **Get All Tables**: Retrieve all tables (work item types) in a selected project
 
-- Start with [nodes/Example/](nodes/Example/) for a basic node
-- Study [nodes/GithubIssues/](nodes/GithubIssues/) for a real-world implementation
+#### Record Resource
+- **Get All Records**: Fetch all records from a table with optional date filtering
+- **Add Record**: Create a new record with field mapping, file attachments, and status selection
+- **Update Record**: Update existing records
 
-### 4. Build Your Node
+**Key Features:**
+- Dynamic field loading based on project and table selection
+- Resource mapper for intuitive field mapping
+- Support for various field types
+- File attachment uploads
 
-Edit the example nodes to fit your use case, or create new node files by copying the structure from [nodes/Example/](nodes/Example/).
+### 2. PlumoAI Trigger
 
-> [!TIP]
-> If you want to scaffold a completely new node package, use `npm create @n8n/node` to start fresh with the CLI's interactive generator.
+Webhook trigger node that starts workflows when PlumoAI events occur.
 
-### 5. Configure Your Package
+**Available Events:**
+- **Record Added**: Triggers when a new record is created
+- **Record Updated**: Triggers when an existing record is modified
+- **Record Added or Updated**: Triggers on both create and update events
 
-Update `package.json` with your details:
+**Features:**
+- Automatically manages webhook configuration
+- Receives complete record data when events occur
+- Easy setup and configuration
 
-- `name` - Your package name (must start with `n8n-nodes-`)
-- `author` - Your name and email
-- `repository` - Your repository URL
-- `description` - What your node does
+### 3. PlumoAI Agent Trigger
 
-Make sure your node is registered in the `n8n.nodes` array.
+AI Agent integration node that connects n8n AI Language Models with PlumoAI agents.
 
-### 6. Develop and Test Locally
+**Operations:**
+- **Create New AI Agent**: Creates a new AI agent project in PlumoAI
+- **Connect With Existing AI Agent**: Connects to an existing AI agent project
 
-Start n8n with your node loaded:
+**Features:**
+- Connects to n8n AI Language Model nodes
+- Streaming responses
+- Automatic chat name generation
+- Workspace and agent management
 
-```bash
-npm run dev
-```
+## Credentials
 
-This command runs `n8n-node dev` which:
+### Prerequisites
 
-- Builds your node with watch mode
-- Starts n8n with your node available
-- Automatically rebuilds when you make changes
-- Opens n8n in your browser (usually http://localhost:5678)
+You need a PlumoAI account and an access token to use these nodes.
 
-You can now test your node in n8n workflows!
+### Setting Up Credentials
 
-> [!NOTE]
-> Learn more about CLI commands in the [@n8n/node-cli documentation](https://www.npmjs.com/package/@n8n/node-cli).
+1. Log in to your PlumoAI account
+2. Navigate to your account settings to generate an API access token
+3. In n8n, when configuring a PlumoAI node:
+   - Select **Credentials** → **Create New**
+   - Choose **PlumoAI API Credentials**
+   - Enter your **Access Token**
+   - Click **Save**
 
-### 7. Lint Your Code
+### Authentication Method
 
-Check for errors:
+- **API Token**: Secure token-based authentication
+  - Your access token is securely stored and used for all API requests
 
-```bash
-npm run lint
-```
+## Compatibility
 
-Auto-fix issues when possible:
+- **Minimum n8n version**: Compatible with n8n versions that support community nodes (n8n 0.200.0+)
+- **Node.js**: Requires Node.js v22 or higher
 
-```bash
-npm run lint:fix
-```
+## Usage
 
-### 8. Build for Production
+### Example 1: Creating a Record with File Attachment
 
-When ready to publish:
+1. Add a **PlumoAI** node to your workflow
+2. Configure:
+   - **Resource**: Record
+   - **Operation**: Add Record
+   - **Project**: Select your project
+   - **Table**: Select the table/type
+   - **Status**: Choose initial status
+   - **Record Fields**: Map your input data to PlumoAI fields
+   - **Attachment**: Specify binary property name (e.g., `data`)
+3. Connect to a node that provides the data and file attachment
+4. Execute the workflow
 
-```bash
-npm run build
-```
+### Example 2: Triggering on Record Updates
 
-This compiles your TypeScript code to the `dist/` folder.
+1. Add a **PlumoAI Trigger** node to your workflow
+2. Configure:
+   - **Trigger On**: Select the event type (Record Added, Updated, or Both)
+   - **Project**: Select the project to monitor
+   - **Table**: Select the table to monitor
+3. Connect subsequent nodes to process the triggered data
+4. Activate the workflow
 
-### 9. Prepare for Publishing
+### Example 3: Creating an AI Agent
 
-Before publishing:
+1. Add a **PlumoAI Agent Trigger** node
+2. Connect an **AI Language Model** node (OpenAI, Anthropic, etc.)
+3. Configure:
+   - **Operation**: Create New AI Agent
+   - **Workspace**: Select your workspace
+   - **AI Agent Name**: Enter a name for your agent
+4. The node will create the agent and set up the webhook automatically
 
-1. **Update documentation**: Replace this README with your node's documentation. Use [README_TEMPLATE.md](README_TEMPLATE.md) as a starting point.
-2. **Update the LICENSE**: Add your details to the [LICENSE](LICENSE.md) file.
-3. **Test thoroughly**: Ensure your node works in different scenarios.
+### Field Mapping
 
-### 10. Publish to npm
+The **Record Fields** resource mapper automatically:
+- Loads all available fields for the selected project and table
+- Detects field types
+- Shows required fields
+- Provides options for dropdown fields
 
-Publish your package to make it available to the n8n community:
+### Dynamic Options
 
-```bash
-npm publish
-```
-
-Learn more about [publishing to npm](https://docs.npmjs.com/packages-and-modules/contributing-packages-to-the-registry).
-
-### 11. Submit for Verification (Optional)
-
-Get your node verified for n8n Cloud:
-
-1. Ensure your node meets the [requirements](https://docs.n8n.io/integrations/creating-nodes/deploy/submit-community-nodes/):
-   - Uses MIT license ✅ (included in this starter)
-   - No external package dependencies
-   - Follows n8n's design guidelines
-   - Passes quality and security review
-
-2. Submit through the [n8n Creator Portal](https://creators.n8n.io/nodes)
-
-**Benefits of verification:**
-
-- Available directly in n8n Cloud
-- Discoverable in the n8n nodes panel
-- Verified badge for quality assurance
-- Increased visibility in the n8n community
-
-## Available Scripts
-
-This starter includes several npm scripts to streamline development:
-
-| Script                | Description                                                      |
-| --------------------- | ---------------------------------------------------------------- |
-| `npm run dev`         | Start n8n with your node and watch for changes (runs `n8n-node dev`) |
-| `npm run build`       | Compile TypeScript to JavaScript for production (runs `n8n-node build`) |
-| `npm run build:watch` | Build in watch mode (auto-rebuild on changes)                    |
-| `npm run lint`        | Check your code for errors and style issues (runs `n8n-node lint`) |
-| `npm run lint:fix`    | Automatically fix linting issues when possible (runs `n8n-node lint --fix`) |
-| `npm run release`     | Create a new release (runs `n8n-node release`)                   |
-
-> [!TIP]
-> These scripts use the [@n8n/node-cli](https://www.npmjs.com/package/@n8n/node-cli) under the hood. You can also run CLI commands directly, e.g., `npx n8n-node dev`.
-
-## Troubleshooting
-
-### My node doesn't appear in n8n
-
-1. Make sure you ran `npm install` to install dependencies
-2. Check that your node is listed in `package.json` under `n8n.nodes`
-3. Restart the dev server with `npm run dev`
-4. Check the console for any error messages
-
-### Linting errors
-
-Run `npm run lint:fix` to automatically fix most common issues. For remaining errors, check the [n8n node development guidelines](https://docs.n8n.io/integrations/creating-nodes/).
-
-### TypeScript errors
-
-Make sure you're using Node.js v22 or higher and have run `npm install` to get all type definitions.
+All nodes support dynamic option loading:
+- **Projects**: Automatically loads from your PlumoAI account
+- **Tables**: Loads based on selected project
+- **Statuses**: Loads based on selected project and table
+- **Workspaces**: Loads available workspaces for AI agents
+- **Agents**: Loads existing agents in selected workspace
 
 ## Resources
 
-- **[n8n Node Documentation](https://docs.n8n.io/integrations/creating-nodes/)** - Complete guide to building nodes
-- **[n8n Community Forum](https://community.n8n.io/)** - Get help and share your nodes
-- **[@n8n/node-cli Documentation](https://www.npmjs.com/package/@n8n/node-cli)** - CLI tool reference
-- **[n8n Creator Portal](https://creators.n8n.io/nodes)** - Submit your node for verification
-- **[Submit Community Nodes Guide](https://docs.n8n.io/integrations/creating-nodes/deploy/submit-community-nodes/)** - Verification requirements and process
+- [n8n community nodes documentation](https://docs.n8n.io/integrations/#community-nodes)
+- [PlumoAI Documentation](https://plumoai.com/docs)
+- [n8n Node Documentation](https://docs.n8n.io/integrations/creating-nodes/)
+- [n8n Community Forum](https://community.n8n.io/)
+- [GitHub Repository](https://github.com/PlumoAI/PlumoAI-N8N-Custom-Node)
 
-## Contributing
+## Version History
 
-Have suggestions for improving this starter? [Open an issue](https://github.com/n8n-io/n8n-nodes-starter/issues) or submit a pull request!
+### 0.1.20
+- Latest version with bug fixes and improvements
+
+### Previous Versions
+See [CHANGELOG.md](CHANGELOG.md) for detailed version history.
+
+## Support
+
+For issues, feature requests, or questions:
+- Open an issue on [GitHub](https://github.com/PlumoAI/PlumoAI-N8N-Custom-Node/issues)
+- Contact: hussain@plumoai.com
 
 ## License
 
-[MIT](https://github.com/n8n-io/n8n-nodes-starter/blob/master/LICENSE.md)
+[MIT](LICENSE.md)

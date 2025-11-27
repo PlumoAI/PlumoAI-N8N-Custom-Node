@@ -265,6 +265,36 @@ export class PlumoAiAgentTrigger implements INodeType {
 				const match = webhookUrl.match(/^(https?:\/\/[^/?#]+)(?:[/?#]|$)/i);	
 				const domainWithScheme = match ? match[1] : null;
 				const workflowUrl = `${domainWithScheme}/workflow/${this.getWorkflow().id}`;
+				var aiagentData = null;
+				if(!isNew && webhookData.aiagent_id)
+				{
+					const parameters = {
+						p_project_id: webhookData.aiagent_id
+					  };
+			  
+					const result = await storeProcedureServices.executeStoreProcedure(
+						'usp_proj_get_project_by_id',
+						parameters,
+						null,
+						1,
+						companyId
+					);
+				
+					const projectData = await this.helpers.httpRequest({
+						method: 'POST',
+						url: `${API_BASE_URL}/Company/store/procedure/execute`,
+						body: projectBody,
+						headers: {
+							'Authorization': "Bearer "+credentials.accessToken,
+							'companyid':JSON.stringify(verifyResponse.data.companyIds)
+						},
+					});		
+					if(projectData && projectData.data && projectData.data.length>0)
+					{
+						aiagentData = projectData.data[0];
+					}
+
+				}
 				const projectBody = {
 					"storeProcedureName":"usp_proj_save_project_in_json",
 					"version":3,
@@ -284,6 +314,7 @@ export class PlumoAiAgentTrigger implements INodeType {
 						"p_TaskTimerAutoOn":0,
 						"p_IsTrackLocation":0,
 						"p_agent_config":{
+							...aiagentData?.project_aiagent_config??{}
 							workflowId:this.getWorkflow().id,
 							workflowName:this.getNode().name,
 							workflowCreatedAt:new Date().toISOString(),
